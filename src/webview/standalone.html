@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Note – Standalone</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { background: #1e1e1e; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../../dist/webview.js"></script>
+  <script>
+    const mockDoc = {
+      audioPath: './sample.mp3',
+      blocks: [
+        { t: 0,  end: null, text: 'Introduction' },
+        { t: 10, end: null, text: 'Comment A\nsome extra lines here' },
+        { t: 90, end: null, text: 'Comment B' },
+        { t: 90, end: 105, text: 'Range comment' },
+      ]
+    };
+
+    const bridge = {
+      onMessage: (handler) => {
+        window.__mockBridgeHandler = handler;
+      },
+      postMessage: (msg) => {
+        console.log('[bridge->host]', JSON.stringify(msg));
+      }
+    };
+
+    AudioNoteWebview.init(
+      document.getElementById('app'),
+      bridge,
+      mockDoc,
+      './sample.mp3'
+    );
+  </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  background: var(--vscode-editor-background, #1e1e1e);
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  font-family: var(--vscode-font-family, 'Segoe UI', sans-serif);
+  font-size: 13px;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.error-banner {
+  background: #5a1d1d;
+  color: #f48771;
+  padding: 8px 16px;
+  font-size: 12px;
+}
+
+.toolbar {
+  height: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  background: var(--vscode-titleBar-activeBackground, #3c3c3c);
+  border-bottom: 1px solid var(--vscode-panel-border, #444);
+  flex-shrink: 0;
+}
+
+.play-btn {
+  background: transparent;
+  border: none;
+  color: var(--vscode-editor-foreground, #d4d4d4);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+
+.play-btn:hover {
+  color: #ffffff;
+}
+
+.time-display {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground, #aaa);
+}
+
+.file-label {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground, #888);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.main-area {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.wave-panel {
+  width: 160px;
+  min-width: 160px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  background: #1e1e1e;
+  border-right: 1px solid var(--vscode-panel-border, #444);
+}
+
+.wave-canvas {
+  display: block;
+  width: 100%;
+}
+
+.playhead {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 80, 80, 0.85);
+  pointer-events: none;
+  top: 0;
+}
+
+.note-panel {
+  flex: 1;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.note-inner {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.note-block {
+  position: absolute;
+  top: calc(var(--t) * 80px);
+  left: 0;
+  right: 0;
+  padding: 4px 24px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.note-block:hover {
+  background: rgba(255,255,255,0.04);
+}
