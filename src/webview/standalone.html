@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Note (standalone)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="toolbar">
+    <button id="play-btn">&#9654;</button>
+    <span id="time-display">0:00 / 0:00</span>
+    <span id="file-label"></span>
+  </div>
+  <div id="error-banner"></div>
+  <div id="main-area">
+    <div id="wave-panel">
+      <div id="wave-inner">
+        <canvas id="wave-canvas" width="160" height="0"></canvas>
+        <div id="playhead" style="top:0"></div>
+      </div>
+    </div>
+    <div id="notes-panel">
+      <div id="notes-inner"></div>
+    </div>
+  </div>
+
+  <!-- ビルド済みバンドルを読み込む (npm run build 後に使用) -->
+  <script src="../../dist/webview.js"></script>
+  <script>
+    // モック bridge: 既定のサンプルドキュメントを送信する
+    var mockBridge = {
+      onMessage: function(handler) {
+        window.__mockHandler = handler;
+      },
+      postMessage: function(msg) {
+        if (msg.type === 'ready') {
+          // サンプルデータを送信
+          window.__mockHandler({
+            type: 'init',
+            document: {
+              audioPath: './sample.mp3',
+              blocks: [
+                { t: 0,  end: null, text: '冒頭のコメント' },
+                { t: 10, end: null, text: 'コメントA\nラベルなし続き' },
+                { t: 90, end: null, text: 'コメントB' },
+                { t: 90, end: 105,  text: '範囲コメント (90s〜105s)' }
+              ]
+            },
+            audioUri: './sample.mp3'
+          });
+        } else if (msg.type === 'log') {
+          // ログをブラウザのconsoleに出力
+          console[msg.level]('[webview]', ...msg.args);
+        } else if (msg.type === 'insertTimestamp') {
+          console.log('[standalone] insertTimestamp:', msg.text);
+          alert('挿入予定テキスト:\n' + msg.text);
+        }
+      }
+    };
+
+    AudioNoteApp.init(mockBridge);
+  </script>
+</body>
+</html>
