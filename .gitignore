@@ -4,3 +4,5 @@ out/
 *.vsix
 webview-debug.log
 *.js.map
+.playwright-mcp/
+src/webview/sample.mp3
