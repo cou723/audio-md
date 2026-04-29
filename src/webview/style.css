@@ -64,7 +64,7 @@ body {
 }
 
 #notes-panel { flex: 1; overflow-y: scroll; }
-#notes-inner { position: relative; }
+#notes-inner { position: relative; overflow: hidden; }
 
 .note-block {
   position: absolute;

@@ -33,6 +33,7 @@
   "scripts": {
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
+    "serve": "python3 -m http.server 7890",
     "package": "vsce package --no-dependencies"
   },
   "devDependencies": {

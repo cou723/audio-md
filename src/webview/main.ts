@@ -31,6 +31,10 @@ function formatTime(sec: number): string {
     : `${m}:${String(s).padStart(2, "0")}`;
 }
 
+function syncScroll(source: Element, target: Element): void {
+  target.scrollTop = source.scrollTop;
+}
+
 export function init(bridge: PlatformBridge): void {
   (["log", "warn", "error"] as const).forEach(level => {
     const orig = console[level].bind(console);
@@ -51,27 +55,24 @@ export function init(bridge: PlatformBridge): void {
   const errorBanner = document.getElementById("error-banner")!;
   const playhead = document.getElementById("playhead")!;
 
+  const audioCtx = new AudioContext();
   let audio: HTMLAudioElement | null = null;
   let animFrameId: number | null = null;
   let isSyncing = false;
   let dragStartY: number | null = null;
-  let dragStartTime: number | null = null;
+  let currentAudioUri: string | null = null;
 
   wavePanel.addEventListener("scroll", () => {
     if (isSyncing) return;
     isSyncing = true;
-    const waveMax = wavePanel.scrollHeight - wavePanel.clientHeight;
-    const noteMax = notesPanel.scrollHeight - notesPanel.clientHeight;
-    if (waveMax > 0) notesPanel.scrollTop = (wavePanel.scrollTop / waveMax) * noteMax;
+    syncScroll(wavePanel, notesPanel);
     isSyncing = false;
   });
 
   notesPanel.addEventListener("scroll", () => {
     if (isSyncing) return;
     isSyncing = true;
-    const noteMax = notesPanel.scrollHeight - notesPanel.clientHeight;
-    const waveMax = wavePanel.scrollHeight - wavePanel.clientHeight;
-    if (noteMax > 0) wavePanel.scrollTop = (notesPanel.scrollTop / noteMax) * waveMax;
+    syncScroll(notesPanel, wavePanel);
     isSyncing = false;
   });
 
@@ -82,32 +83,31 @@ export function init(bridge: PlatformBridge): void {
 
   waveCanvas.addEventListener("mousedown", e => {
     dragStartY = e.offsetY + wavePanel.scrollTop;
-    dragStartTime = dragStartY / PX_PER_SEC;
   });
 
   waveCanvas.addEventListener("mouseup", e => {
-    if (dragStartY === null || dragStartTime === null) return;
+    if (dragStartY === null) return;
+    const startTime = dragStartY / PX_PER_SEC;
     const endY = e.offsetY + wavePanel.scrollTop;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
     if (audio) {
-      audio.currentTime = isDrag ? Math.min(dragStartTime, endTime) : dragStartTime;
+      audio.currentTime = isDrag ? Math.min(startTime, endTime) : startTime;
     }
 
     let text: string;
     if (isDrag) {
-      const a = Math.floor(Math.min(dragStartTime, endTime));
-      const b = Math.floor(Math.max(dragStartTime, endTime));
+      const a = Math.floor(Math.min(startTime, endTime));
+      const b = Math.floor(Math.max(startTime, endTime));
       text = `[${formatTime(a)}-${formatTime(b)}](#t=${a},${b}) `;
     } else {
-      const sec = Math.floor(dragStartTime);
+      const sec = Math.floor(startTime);
       text = `[${formatTime(sec)}](#t=${sec}) `;
     }
 
     bridge.postMessage({ type: "insertTimestamp", text });
     dragStartY = null;
-    dragStartTime = null;
   });
 
   bridge.onMessage((raw: unknown) => {
@@ -116,8 +116,6 @@ export function init(bridge: PlatformBridge): void {
   });
 
   bridge.postMessage({ type: "ready" });
-
-  // ----------------------------------------------------------------
 
   function handleInit(msg: InitMessage): void {
     const { document: doc, audioUri } = msg;
@@ -128,7 +126,10 @@ export function init(bridge: PlatformBridge): void {
       showError("音声ファイルが見つかりません: " + doc.audioPath);
       return;
     }
-    loadAudio(audioUri, doc.audioPath);
+    if (audioUri !== currentAudioUri) {
+      currentAudioUri = audioUri;
+      loadAudio(audioUri, doc.audioPath);
+    }
   }
 
   function loadAudio(uri: string, audioPath: string): void {
@@ -145,7 +146,7 @@ export function init(bridge: PlatformBridge): void {
 
       fetch(uri)
         .then(r => r.arrayBuffer())
-        .then(buf => new AudioContext().decodeAudioData(buf))
+        .then(buf => audioCtx.decodeAudioData(buf))
         .then(buffer => drawWaveform(waveCanvas, buffer))
         .catch(err => {
           console.error("decodeAudioData failed:", String(err));
@@ -160,18 +161,14 @@ export function init(bridge: PlatformBridge): void {
   function setContentHeight(duration: number): void {
     const h = Math.ceil(duration * PX_PER_SEC);
     waveInner.style.height = `${h}px`;
-    notesInner.style.height = `${h}px`;
+    notesInner.style.height = `${h + 120}px`;
     waveCanvas.height = h;
     waveCanvas.width = 160;
   }
 
   function drawWaveform(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
+    const h = canvas.height;
     const duration = buffer.duration;
-    const h = Math.ceil(duration * PX_PER_SEC);
-    canvas.height = h;
-    canvas.width = 160;
-    waveInner.style.height = `${h}px`;
-    notesInner.style.height = `${h}px`;
 
     const ctx = canvas.getContext("2d")!;
     ctx.fillStyle = "#1e1e1e";
@@ -221,23 +218,30 @@ export function init(bridge: PlatformBridge): void {
   }
 
   function startPlaybackLoop(audioEl: HTMLAudioElement): void {
-    if (animFrameId !== null) cancelAnimationFrame(animFrameId);
+    if (animFrameId !== null) { cancelAnimationFrame(animFrameId); animFrameId = null; }
 
     function tick(): void {
-      if (!audioEl.paused) {
-        const cur = audioEl.currentTime;
-        const dur = audioEl.duration;
-        timeDisplay.textContent = `${formatTime(Math.floor(cur))} / ${formatTime(Math.floor(dur))}`;
-        const py = cur * PX_PER_SEC;
-        playhead.style.top = `${py}px`;
-        const center = wavePanel.scrollTop + wavePanel.clientHeight / 2;
-        if (Math.abs(py - center) > wavePanel.clientHeight * 0.3) {
-          wavePanel.scrollTop = py - wavePanel.clientHeight / 2;
-        }
+      const cur = audioEl.currentTime;
+      const dur = audioEl.duration;
+      timeDisplay.textContent = `${formatTime(Math.floor(cur))} / ${formatTime(Math.floor(dur))}`;
+      const py = cur * PX_PER_SEC;
+      playhead.style.top = `${py}px`;
+      const center = wavePanel.scrollTop + wavePanel.clientHeight / 2;
+      if (Math.abs(py - center) > wavePanel.clientHeight * 0.3) {
+        wavePanel.scrollTop = py - wavePanel.clientHeight / 2;
       }
       animFrameId = requestAnimationFrame(tick);
     }
-    animFrameId = requestAnimationFrame(tick);
+
+    audioEl.addEventListener("play", () => {
+      if (animFrameId === null) animFrameId = requestAnimationFrame(tick);
+    });
+    audioEl.addEventListener("pause", () => {
+      if (animFrameId !== null) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    });
+    audioEl.addEventListener("ended", () => {
+      if (animFrameId !== null) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    });
   }
 
   function showError(message: string): void {

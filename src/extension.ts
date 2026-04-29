@@ -130,11 +130,16 @@ function resolveAudioUri(
   return webview.asWebviewUri(vscode.Uri.file(audioFile)).toString();
 }
 
+let logSize = 0;
+
 function writeLog(logFile: string, msg: { level: string; args: string[] }): void {
-  if (fs.existsSync(logFile) && fs.statSync(logFile).size > 5_000_000) {
+  const line = `[${msg.level}] ${msg.args.join(" ")}\n`;
+  if (logSize > 5_000_000) {
     fs.writeFileSync(logFile, "");
+    logSize = 0;
   }
-  fs.appendFileSync(logFile, `[${msg.level}] ${msg.args.join(" ")}\n`);
+  fs.appendFileSync(logFile, line);
+  logSize += Buffer.byteLength(line);
 }
 
 const APP_CSS = `
@@ -151,7 +156,7 @@ body{background:#1e1e1e;color:#d4d4d4;font-family:monospace;height:100vh;overflo
 #wave-canvas{display:block;cursor:crosshair}
 #playhead{position:absolute;left:0;right:0;height:2px;background:#f44747;pointer-events:none;z-index:10}
 #notes-panel{flex:1;overflow-y:scroll}
-#notes-inner{position:relative}
+#notes-inner{position:relative;overflow:hidden}
 .note-block{position:absolute;left:0;right:0;padding:4px 24px;line-height:1.75;font-size:13px;border-top:1px solid #3c3c3c;white-space:pre-wrap}
 #wave-panel::-webkit-scrollbar,#notes-panel::-webkit-scrollbar{width:6px}
 #wave-panel::-webkit-scrollbar-thumb,#notes-panel::-webkit-scrollbar-thumb{background:#555;border-radius:3px}
