@@ -83,7 +83,7 @@ export function init(bridge: PlatformBridge): void {
   });
 
   waveCanvas.addEventListener("mousedown", e => {
-    dragStartY = e.offsetY + wavePanel.scrollTop;
+    dragStartY = e.clientY - waveCanvas.getBoundingClientRect().top;
     dragStartButton = e.button;
   });
 
@@ -94,12 +94,18 @@ export function init(bridge: PlatformBridge): void {
       return;
     }
     const startTime = dragStartY / PX_PER_SEC;
-    const endY = e.offsetY + wavePanel.scrollTop;
+    const endY = e.clientY - waveCanvas.getBoundingClientRect().top;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
     if (e.button === 0) {
-      if (audio) audio.currentTime = endTime;
+      if (audio) {
+        audio.currentTime = endTime;
+        playhead.style.top = `${endTime * PX_PER_SEC}px`;
+        if (!isNaN(audio.duration)) {
+          timeDisplay.textContent = `${formatTime(Math.floor(endTime))} / ${formatTime(Math.floor(audio.duration))}`;
+        }
+      }
     } else if (e.button === 2) {
       let text: string;
       if (isDrag) {
