@@ -83,7 +83,7 @@ export function init(bridge: PlatformBridge): void {
   });
 
   waveCanvas.addEventListener("mousedown", e => {
-    dragStartY = e.clientY - waveCanvas.getBoundingClientRect().top;
+    dragStartY = e.offsetY;
     dragStartButton = e.button;
   });
 
@@ -94,7 +94,7 @@ export function init(bridge: PlatformBridge): void {
       return;
     }
     const startTime = dragStartY / PX_PER_SEC;
-    const endY = e.clientY - waveCanvas.getBoundingClientRect().top;
+    const endY = e.offsetY;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
@@ -246,10 +246,6 @@ export function init(bridge: PlatformBridge): void {
       timeDisplay.textContent = `${formatTime(Math.floor(cur))} / ${formatTime(Math.floor(dur))}`;
       const py = cur * PX_PER_SEC;
       playhead.style.top = `${py}px`;
-      const center = wavePanel.scrollTop + wavePanel.clientHeight / 2;
-      if (Math.abs(py - center) > wavePanel.clientHeight * 0.3) {
-        wavePanel.scrollTop = py - wavePanel.clientHeight / 2;
-      }
       animFrameId = requestAnimationFrame(tick);
     }
 
