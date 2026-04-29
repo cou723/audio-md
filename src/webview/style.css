@@ -76,6 +76,13 @@ body {
   white-space: pre-wrap;
 }
 
+.note-block--range {
+  background: rgba(78, 201, 176, 0.07);
+  border-left: 3px solid #4ec9b0;
+  border-top-color: #4ec9b0;
+  padding-left: 21px;
+}
+
 #wave-panel::-webkit-scrollbar,
 #notes-panel::-webkit-scrollbar { width: 6px; }
 #wave-panel::-webkit-scrollbar-thumb,

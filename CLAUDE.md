@@ -202,8 +202,9 @@ type AudioNoteDocument = Schema.Schema.Type<typeof AudioNoteDocument>;
 2. 左カラム（160px固定）：音声波形を縦描画（Y軸＝時間）
 3. 右カラム（残り全幅）：ブロックテキストを波形と対応するY位置に表示
 4. ツールバー：再生・一時停止、現在時刻 / 総時間の表示
-5. 波形クリック → 該当秒から再生 + エディタのカーソル位置にタイムスタンプ構文を挿入
-6. 波形ドラッグ → 範囲タイムスタンプ構文を挿入
+5. 波形左クリック/ドラッグ → 離した位置にシーク（再生中はそこから継続、停止中はプレイヘッド移動のみ）
+6. 波形右クリック → エディタのカーソル位置にポイントタイムスタンプ構文を挿入
+   波形右ドラッグ → 範囲タイムスタンプ構文をエディタに挿入
 7. 左右カラムのスクロール同期
 8. 再生中は波形を自動スクロールしてプレイヘッドを追う
 9. Webview console.log をlogファイルへ書き出す（デバッグ用）
@@ -270,11 +271,14 @@ const channelData: Float32Array = buffer.getChannelData(0); // ch0のみ使用
 const y    = event.offsetY + waveformPanel.scrollTop;
 const time = y / PX_PER_SEC;
 
-// ドラッグ範囲
-// mousedown → startTime
-// mouseup   → endTime
-// 5px未満のドラッグは点クリック扱い
+// ボタン判定：e.button === 0 が左、e.button === 2 が右
+// 左クリック/ドラッグ：シークのみ（mouseup の位置を使用）
+// 右クリック/ドラッグ：タイムスタンプ挿入
+//   ドラッグ判定（右ボタンのみ）：5px未満は点クリック扱い
 const isDrag = Math.abs(mouseupY - mousedownY) >= 5;
+
+// 右クリックメニューを抑制する
+waveCanvas.addEventListener("contextmenu", e => e.preventDefault());
 ```
 
 ---

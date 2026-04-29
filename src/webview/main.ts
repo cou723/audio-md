@@ -60,6 +60,7 @@ export function init(bridge: PlatformBridge): void {
   let animFrameId: number | null = null;
   let isSyncing = false;
   let dragStartY: number | null = null;
+  let dragStartButton: number | null = null;
   let currentAudioUri: string | null = null;
 
   wavePanel.addEventListener("scroll", () => {
@@ -83,31 +84,41 @@ export function init(bridge: PlatformBridge): void {
 
   waveCanvas.addEventListener("mousedown", e => {
     dragStartY = e.offsetY + wavePanel.scrollTop;
+    dragStartButton = e.button;
   });
 
   waveCanvas.addEventListener("mouseup", e => {
-    if (dragStartY === null) return;
+    if (dragStartY === null || dragStartButton !== e.button) {
+      dragStartY = null;
+      dragStartButton = null;
+      return;
+    }
     const startTime = dragStartY / PX_PER_SEC;
     const endY = e.offsetY + wavePanel.scrollTop;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
-    if (audio) {
-      audio.currentTime = isDrag ? Math.min(startTime, endTime) : startTime;
+    if (e.button === 0) {
+      if (audio) audio.currentTime = endTime;
+    } else if (e.button === 2) {
+      let text: string;
+      if (isDrag) {
+        const a = Math.floor(Math.min(startTime, endTime));
+        const b = Math.floor(Math.max(startTime, endTime));
+        text = `[${formatTime(a)}-${formatTime(b)}](#t=${a},${b}) `;
+      } else {
+        const sec = Math.floor(startTime);
+        text = `[${formatTime(sec)}](#t=${sec}) `;
+      }
+      bridge.postMessage({ type: "insertTimestamp", text });
     }
 
-    let text: string;
-    if (isDrag) {
-      const a = Math.floor(Math.min(startTime, endTime));
-      const b = Math.floor(Math.max(startTime, endTime));
-      text = `[${formatTime(a)}-${formatTime(b)}](#t=${a},${b}) `;
-    } else {
-      const sec = Math.floor(startTime);
-      text = `[${formatTime(sec)}](#t=${sec}) `;
-    }
-
-    bridge.postMessage({ type: "insertTimestamp", text });
     dragStartY = null;
+    dragStartButton = null;
+  });
+
+  waveCanvas.addEventListener("contextmenu", e => {
+    e.preventDefault();
   });
 
   bridge.onMessage((raw: unknown) => {
@@ -210,8 +221,11 @@ export function init(bridge: PlatformBridge): void {
     notesInner.replaceChildren();
     for (const block of blocks) {
       const el = document.createElement("div");
-      el.className = "note-block";
+      el.className = block.end !== null ? "note-block note-block--range" : "note-block";
       el.style.top = `${block.t * PX_PER_SEC}px`;
+      if (block.end !== null) {
+        el.style.minHeight = `${(block.end - block.t) * PX_PER_SEC}px`;
+      }
       el.textContent = block.text.trim();
       notesInner.appendChild(el);
     }
