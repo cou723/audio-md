@@ -97,7 +97,7 @@ export function init(bridge: PlatformBridge): void {
   });
 
   waveCanvas.addEventListener("mousedown", e => {
-    dragStartY = e.offsetY + wavePanel.scrollTop;
+    dragStartY = e.offsetY;
     dragStartButton = e.button;
   });
 
@@ -108,7 +108,7 @@ export function init(bridge: PlatformBridge): void {
       return;
     }
     const startTime = dragStartY / PX_PER_SEC;
-    const endY = e.offsetY + wavePanel.scrollTop;
+    const endY = e.offsetY;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
