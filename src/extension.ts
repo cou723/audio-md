@@ -148,7 +148,7 @@ body{background:#1e1e1e;color:#d4d4d4;font-family:monospace;height:100vh;overflo
 #toolbar{height:44px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#252526;border-bottom:1px solid #3c3c3c;flex-shrink:0}
 #play-btn{background:none;border:1px solid #555;color:#d4d4d4;padding:4px 10px;cursor:pointer;border-radius:3px;font-size:14px}
 #play-btn:hover{background:#3c3c3c}
-#file-label{margin-left:auto;color:#888;font-size:12px}
+#volume-control{display:flex;align-items:center;gap:6px;margin-left:auto}#volume-icon{font-size:14px}#volume-slider{width:80px;cursor:pointer;accent-color:#569cd6}#file-label{color:#888;font-size:12px}
 #error-banner{display:none;background:#5a1d1d;color:#f48771;padding:8px 12px;font-size:12px;flex-shrink:0}
 #main-area{display:flex;flex:1;overflow:hidden}
 #wave-panel{width:160px;flex-shrink:0;overflow-y:scroll;overflow-x:hidden}
@@ -165,6 +165,10 @@ body{background:#1e1e1e;color:#d4d4d4;font-family:monospace;height:100vh;overflo
 const APP_HTML = `  <div id="toolbar">
     <button id="play-btn">&#9654;</button>
     <span id="time-display">0:00 / 0:00</span>
+    <span id="volume-control">
+      <span id="volume-icon">🔊</span>
+      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
+    </span>
     <span id="file-label"></span>
   </div>
   <div id="error-banner"></div>

@@ -32,7 +32,11 @@ body {
 }
 #play-btn:hover { background: #3c3c3c; }
 
-#file-label { margin-left: auto; color: #888; font-size: 12px; }
+#volume-control { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+#volume-icon { font-size: 14px; }
+#volume-slider { width: 80px; cursor: pointer; accent-color: #569cd6; }
+
+#file-label { color: #888; font-size: 12px; }
 
 #error-banner {
   display: none;

@@ -54,6 +54,7 @@ export function init(bridge: PlatformBridge): void {
   const notesInner = document.getElementById("notes-inner")!;
   const errorBanner = document.getElementById("error-banner")!;
   const playhead = document.getElementById("playhead")!;
+  const volumeSlider = document.getElementById("volume-slider") as HTMLInputElement;;
 
   const audioCtx = new AudioContext();
   let audio: HTMLAudioElement | null = null;
@@ -80,6 +81,19 @@ export function init(bridge: PlatformBridge): void {
   playBtn.addEventListener("click", () => {
     if (!audio) return;
     if (audio.paused) { audio.play(); } else { audio.pause(); }
+  });
+
+  volumeSlider.addEventListener("input", () => {
+    if (!audio) return;
+    audio.volume = parseFloat(volumeSlider.value);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === " ") {
+      e.preventDefault();
+      if (!audio) return;
+      if (audio.paused) { audio.play(); } else { audio.pause(); }
+    }
   });
 
   waveCanvas.addEventListener("mousedown", e => {
