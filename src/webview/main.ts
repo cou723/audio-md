@@ -83,7 +83,7 @@ export function init(bridge: PlatformBridge): void {
   });
 
   waveCanvas.addEventListener("mousedown", e => {
-    dragStartY = e.offsetY;
+    dragStartY = e.offsetY + wavePanel.scrollTop;
     dragStartButton = e.button;
   });
 
@@ -94,7 +94,7 @@ export function init(bridge: PlatformBridge): void {
       return;
     }
     const startTime = dragStartY / PX_PER_SEC;
-    const endY = e.offsetY;
+    const endY = e.offsetY + wavePanel.scrollTop;
     const endTime = endY / PX_PER_SEC;
     const isDrag = Math.abs(endY - dragStartY) >= 5;
 
@@ -153,26 +153,40 @@ export function init(bridge: PlatformBridge): void {
     if (audio) { audio.pause(); audio.src = ""; }
     if (animFrameId !== null) { cancelAnimationFrame(animFrameId); animFrameId = null; }
 
-    audio = new Audio(uri);
-    audio.addEventListener("error", () => showError("音声ファイルを読み込めませんでした: " + audioPath));
-    audio.addEventListener("loadedmetadata", () => {
-      const duration = audio!.duration;
-      timeDisplay.textContent = `0:00 / ${formatTime(Math.floor(duration))}`;
-      setContentHeight(duration);
-      startPlaybackLoop(audio!);
+    fetch(uri)
+      .then(r => r.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        const audioEl = new Audio(blobUrl);
+        audio = audioEl;
 
-      fetch(uri)
-        .then(r => r.arrayBuffer())
-        .then(buf => audioCtx.decodeAudioData(buf))
-        .then(buffer => drawWaveform(waveCanvas, buffer))
-        .catch(err => {
-          console.error("decodeAudioData failed:", String(err));
-          showError("波形データのデコードに失敗しました");
+        audioEl.addEventListener("error", () => {
+          URL.revokeObjectURL(blobUrl);
+          showError("音声ファイルを読み込めませんでした: " + audioPath);
         });
-    });
-    audio.addEventListener("play", () => { playBtn.textContent = "⏸"; });
-    audio.addEventListener("pause", () => { playBtn.textContent = "▶"; });
-    audio.addEventListener("ended", () => { playBtn.textContent = "▶"; });
+        audioEl.addEventListener("loadedmetadata", () => {
+          const duration = audioEl.duration;
+          timeDisplay.textContent = `0:00 / ${formatTime(Math.floor(duration))}`;
+          setContentHeight(duration);
+          startPlaybackLoop(audioEl);
+
+          blob.arrayBuffer()
+            .then(buf => audioCtx.decodeAudioData(buf))
+            .then(buffer => {
+              URL.revokeObjectURL(blobUrl);
+              drawWaveform(waveCanvas, buffer);
+            })
+            .catch(err => {
+              URL.revokeObjectURL(blobUrl);
+              console.error("decodeAudioData failed:", String(err));
+              showError("波形データのデコードに失敗しました");
+            });
+        });
+        audioEl.addEventListener("play", () => { playBtn.textContent = "⏸"; });
+        audioEl.addEventListener("pause", () => { playBtn.textContent = "▶"; });
+        audioEl.addEventListener("ended", () => { playBtn.textContent = "▶"; });
+      })
+      .catch(() => showError("音声ファイルを読み込めませんでした: " + audioPath));
   }
 
   function setContentHeight(duration: number): void {
