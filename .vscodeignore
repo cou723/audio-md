@@ -1,0 +1,14 @@
+.claude/
+.git/
+.gitignore
+.playwright-mcp/
+.vscode/
+audionote-*.vsix
+CLAUDE.md
+debug_project/
+node_modules/
+pnpm-lock.yaml
+src/
+tsconfig.json
+webview-debug.log
+esbuild.mjs
