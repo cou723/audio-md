@@ -77,8 +77,15 @@ body {
   line-height: 1.75;
   font-size: 13px;
   border-top: 1px solid #3c3c3c;
-  white-space: pre-wrap;
 }
+
+.note-block p { margin: 0 0 0.5em; }
+.note-block p:last-child { margin-bottom: 0; }
+.note-block ul, .note-block ol { margin: 0 0 0.5em; padding-left: 1.5em; }
+.note-block blockquote { margin: 0 0 0.5em; padding-left: 0.75em; border-left: 3px solid #555; color: #999; }
+.note-block code { background: #2d2d2d; padding: 1px 4px; border-radius: 3px; font-family: monospace; }
+.note-block pre { background: #2d2d2d; padding: 8px; border-radius: 3px; overflow-x: auto; margin: 0 0 0.5em; }
+.note-block pre code { background: none; padding: 0; }
 
 .note-block--range {
   background: rgba(78, 201, 176, 0.07);

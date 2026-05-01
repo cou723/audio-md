@@ -1,3 +1,6 @@
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+
 export interface PlatformBridge {
   onMessage: (handler: (msg: unknown) => void) => void;
   postMessage: (msg: unknown) => void;
@@ -32,7 +35,8 @@ function formatTime(sec: number): string {
 }
 
 function syncScroll(source: Element, target: Element): void {
-  target.scrollTop = source.scrollTop;
+  const ratio = source.scrollTop / (source.scrollHeight - source.clientHeight);
+  target.scrollTop = ratio * (target.scrollHeight - target.clientHeight);
 }
 
 export function init(bridge: PlatformBridge): void {
@@ -63,6 +67,7 @@ export function init(bridge: PlatformBridge): void {
   let dragStartY: number | null = null;
   let dragStartButton: number | null = null;
   let currentAudioUri: string | null = null;
+  let currentBlobUrl: string | null = null;
 
   wavePanel.addEventListener("scroll", () => {
     if (isSyncing) return;
@@ -166,16 +171,21 @@ export function init(bridge: PlatformBridge): void {
   function loadAudio(uri: string, audioPath: string): void {
     if (audio) { audio.pause(); audio.src = ""; }
     if (animFrameId !== null) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+    if (currentBlobUrl) { URL.revokeObjectURL(currentBlobUrl); currentBlobUrl = null; }
 
     fetch(uri)
       .then(r => r.blob())
       .then(blob => {
         const blobUrl = URL.createObjectURL(blob);
+        currentBlobUrl = blobUrl;
         const audioEl = new Audio(blobUrl);
         audio = audioEl;
 
         audioEl.addEventListener("error", () => {
-          URL.revokeObjectURL(blobUrl);
+          if (currentBlobUrl === blobUrl) {
+            URL.revokeObjectURL(blobUrl);
+            currentBlobUrl = null;
+          }
           showError("音声ファイルを読み込めませんでした: " + audioPath);
         });
         audioEl.addEventListener("loadedmetadata", () => {
@@ -187,11 +197,9 @@ export function init(bridge: PlatformBridge): void {
           blob.arrayBuffer()
             .then(buf => audioCtx.decodeAudioData(buf))
             .then(buffer => {
-              URL.revokeObjectURL(blobUrl);
               drawWaveform(waveCanvas, buffer);
             })
             .catch(err => {
-              URL.revokeObjectURL(blobUrl);
               console.error("decodeAudioData failed:", String(err));
               showError("波形データのデコードに失敗しました");
             });
@@ -223,6 +231,7 @@ export function init(bridge: PlatformBridge): void {
     const samplesPerPx = channelData.length / h;
     ctx.strokeStyle = "#4ec9b0";
     ctx.lineWidth = 1;
+    ctx.beginPath();
     for (let y = 0; y < h; y++) {
       const s0 = Math.floor(y * samplesPerPx);
       const s1 = Math.floor((y + 1) * samplesPerPx);
@@ -232,11 +241,10 @@ export function init(bridge: PlatformBridge): void {
         if (v > peak) peak = v;
       }
       const hw = peak * 76;
-      ctx.beginPath();
       ctx.moveTo(80 - hw, y + 0.5);
       ctx.lineTo(80 + hw, y + 0.5);
-      ctx.stroke();
     }
+    ctx.stroke();
 
     ctx.strokeStyle = "rgba(255,255,255,0.1)";
     ctx.fillStyle = "rgba(255,255,255,0.45)";
@@ -260,7 +268,7 @@ export function init(bridge: PlatformBridge): void {
       if (block.end !== null) {
         el.style.minHeight = `${(block.end - block.t) * PX_PER_SEC}px`;
       }
-      el.textContent = block.text.trim();
+      el.innerHTML = DOMPurify.sanitize(marked.parse(block.text.trim(), { async: false }));
       notesInner.appendChild(el);
     }
   }
