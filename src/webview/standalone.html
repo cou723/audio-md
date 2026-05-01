@@ -7,27 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="toolbar">
-    <button id="play-btn">&#9654;</button>
-    <span id="time-display">0:00 / 0:00</span>
-    <span id="volume-control">
-      <span id="volume-icon">🔊</span>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-    </span>
-    <span id="file-label"></span>
-  </div>
-  <div id="error-banner"></div>
-  <div id="main-area">
-    <div id="wave-panel">
-      <div id="wave-inner">
-        <canvas id="wave-canvas" width="160" height="0"></canvas>
-        <div id="playhead" style="top:0"></div>
-      </div>
-    </div>
-    <div id="notes-panel">
-      <div id="notes-inner"></div>
-    </div>
-  </div>
+  <div id="app-root"></div>
 
   <!-- ビルド済みバンドルを読み込む (npm run build 後に使用) -->
   <script src="../../dist/webview.js"></script>
@@ -39,7 +19,6 @@
       },
       postMessage: function(msg) {
         if (msg.type === 'ready') {
-          // サンプルデータを送信
           window.__mockHandler({
             type: 'init',
             document: {
@@ -54,7 +33,6 @@
             audioUri: './sample.mp3'
           });
         } else if (msg.type === 'log') {
-          // ログをブラウザのconsoleに出力
           console[msg.level]('[webview]', ...msg.args);
         } else if (msg.type === 'insertTimestamp') {
           console.log('[standalone] insertTimestamp:', msg.text);

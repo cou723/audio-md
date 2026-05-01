@@ -3,7 +3,7 @@
   "displayName": "Audio Note Viewer",
   "description": "View .audionote.md files with synchronized audio playback",
   "version": "0.1.0",
-  "publisher": "cou723",
+  "publisher": "coucha",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -50,7 +50,8 @@
   "dependencies": {
     "dompurify": "^3.4.2",
     "effect": "^3.3.0",
-    "marked": "^18.0.2"
+    "marked": "^18.0.2",
+    "preact": "^10.29.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

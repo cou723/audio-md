@@ -20,11 +20,13 @@ async function build() {
 
   const webCtx = await esbuild.context({
     ...base,
-    entryPoints: ['src/webview/main.ts'],
+    entryPoints: ['src/webview/main.tsx'],
     outfile: 'dist/webview.js',
     platform: 'browser',
     format: 'iife',
     globalName: 'AudioNoteApp',
+    jsx: 'automatic',
+    jsxImportSource: 'preact',
   });
 
   if (isDev) {

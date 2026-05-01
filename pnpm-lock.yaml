@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/dompurify':
-        specifier: ^3.2.0
-        version: 3.2.0
       dompurify:
         specifier: ^3.4.2
         version: 3.4.2
@@ -20,7 +17,13 @@ importers:
       marked:
         specifier: ^18.0.2
         version: 18.0.2
+      preact:
+        specifier: ^10.29.1
+        version: 10.29.1
     devDependencies:
+      '@types/dompurify':
+        specifier: ^3.2.0
+        version: 3.2.0
       '@types/marked':
         specifier: ^6.0.0
         version: 6.0.0
@@ -1054,6 +1057,9 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
+
+  preact@10.29.1:
+    resolution: {integrity: sha512-gQCLc/vWroE8lIpleXtdJhTFDogTdZG9AjMUpVkDf2iTCNwYNWA+u16dL41TqUDJO4gm2IgrcMv3uTpjd4Pwmg==}
 
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
@@ -2431,6 +2437,8 @@ snapshots:
   pluralize@2.0.0: {}
 
   pluralize@8.0.0: {}
+
+  preact@10.29.1: {}
 
   prebuild-install@7.1.3:
     dependencies:

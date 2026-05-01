@@ -145,6 +145,7 @@ function writeLog(logFile: string, msg: { level: string; args: string[] }): void
 const APP_CSS = `
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#1e1e1e;color:#d4d4d4;font-family:monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+#app-root{display:flex;flex-direction:column;flex:1;overflow:hidden}
 #toolbar{height:44px;display:flex;align-items:center;gap:12px;padding:0 12px;background:#252526;border-bottom:1px solid #3c3c3c;flex-shrink:0}
 #play-btn{background:none;border:1px solid #555;color:#d4d4d4;padding:4px 10px;cursor:pointer;border-radius:3px;font-size:14px}
 #play-btn:hover{background:#3c3c3c}
@@ -162,27 +163,7 @@ body{background:#1e1e1e;color:#d4d4d4;font-family:monospace;height:100vh;overflo
 #wave-panel::-webkit-scrollbar-thumb,#notes-panel::-webkit-scrollbar-thumb{background:#555;border-radius:3px}
 `;
 
-const APP_HTML = `  <div id="toolbar">
-    <button id="play-btn">&#9654;</button>
-    <span id="time-display">0:00 / 0:00</span>
-    <span id="volume-control">
-      <span id="volume-icon">🔊</span>
-      <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="1">
-    </span>
-    <span id="file-label"></span>
-  </div>
-  <div id="error-banner"></div>
-  <div id="main-area">
-    <div id="wave-panel">
-      <div id="wave-inner">
-        <canvas id="wave-canvas" width="160" height="0"></canvas>
-        <div id="playhead" style="top:0"></div>
-      </div>
-    </div>
-    <div id="notes-panel">
-      <div id="notes-inner"></div>
-    </div>
-  </div>`;
+const APP_HTML = `  <div id="app-root"></div>`;
 
 function generateNonce(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

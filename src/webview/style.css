@@ -10,6 +10,13 @@ body {
   flex-direction: column;
 }
 
+#app-root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
 #toolbar {
   height: 44px;
   display: flex;
