@@ -269,6 +269,20 @@ export function init(bridge: PlatformBridge): void {
         el.style.minHeight = `${(block.end - block.t) * PX_PER_SEC}px`;
       }
       el.innerHTML = DOMPurify.sanitize(marked.parse(block.text.trim(), { async: false }));
+      el.addEventListener("click", (e) => {
+        if ((e.target as Element).closest("a")) return;
+        if (!audio) return;
+        audio.currentTime = block.t;
+        const py = block.t * PX_PER_SEC;
+        playhead.style.top = `${py}px`;
+        if (!isNaN(audio.duration)) {
+          timeDisplay.textContent = `${formatTime(block.t)} / ${formatTime(Math.floor(audio.duration))}`;
+        }
+        const viewportCenter = wavePanel.scrollTop + wavePanel.clientHeight / 2;
+        if (Math.abs(py - viewportCenter) > wavePanel.clientHeight * 0.3) {
+          wavePanel.scrollTop = py - wavePanel.clientHeight / 2;
+        }
+      });
       notesInner.appendChild(el);
     }
   }
@@ -279,9 +293,15 @@ export function init(bridge: PlatformBridge): void {
     function tick(): void {
       const cur = audioEl.currentTime;
       const dur = audioEl.duration;
-      timeDisplay.textContent = `${formatTime(Math.floor(cur))} / ${formatTime(Math.floor(dur))}`;
       const py = cur * PX_PER_SEC;
+      const scrollTop = wavePanel.scrollTop;
+      const clientHeight = wavePanel.clientHeight;
+      timeDisplay.textContent = `${formatTime(Math.floor(cur))} / ${formatTime(Math.floor(dur))}`;
       playhead.style.top = `${py}px`;
+      const viewportCenter = scrollTop + clientHeight / 2;
+      if (Math.abs(py - viewportCenter) > clientHeight * 0.3) {
+        wavePanel.scrollTop = py - clientHeight / 2;
+      }
       animFrameId = requestAnimationFrame(tick);
     }
 

@@ -209,11 +209,11 @@ type AudioNoteDocument = Schema.Schema.Type<typeof AudioNoteDocument>;
 7. 左右カラムのスクロール同期
 8. 再生中は波形を自動スクロールしてプレイヘッドを追う
 9. Webview console.log をlogファイルへ書き出す（デバッグ用）
+10. ノートブロッククリック → そのブロックの開始時間にシーク
 
 ### 実装しない機能
 
 - Webviewでのノート編集（読み取り専用）
-- ノートクリックによるシーク
 - ファイルの自動保存（VSCodeの手動保存のみ）
 - バリデーション（ファイルサイズ・フォーマット検証不要）
 
