@@ -29,7 +29,7 @@ function NoteBlock({ block, onSeek }: NoteBlockProps) {
   const className = block.end !== null ? "note-block note-block--range" : "note-block";
   const style: Record<string, string> = { top: `${block.t * PX_PER_SEC}px` };
   if (block.end !== null) {
-    style.minHeight = `${(block.end - block.t) * PX_PER_SEC}px`;
+    style["minHeight"] = `${(block.end - block.t) * PX_PER_SEC}px`;
   }
 
   return (

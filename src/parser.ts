@@ -23,9 +23,7 @@ export function parseSoundStamp(content: string): SoundStampDocument {
   const blocks: SoundStampBlock[] = [];
   let current: { t: number; end: number | null; lines: string[] } | null = null;
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
+  for (const [i, line] of lines.entries()) {
     if (i === 0 && line.startsWith("@audio ")) {
       audioPath = line.slice(7).trim();
       continue;
@@ -36,7 +34,7 @@ export function parseSoundStamp(content: string): SoundStampDocument {
       if (current) {
         blocks.push({ t: current.t, end: current.end, text: current.lines.join("\n").trimEnd() });
       }
-      const t = parseInt(match[2], 10);
+      const t = parseInt(match[2]!, 10);
       const end = match[3] !== undefined ? parseInt(match[3], 10) : null;
       current = { t, end, lines: [line.slice(match[0].length)] };
     } else if (current !== null) {

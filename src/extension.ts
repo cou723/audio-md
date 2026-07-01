@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { parseSoundStamp, SoundStampDocument } from "./parser";
+import { parseSoundStamp, type SoundStampDocument } from "./parser";
 
 const NOTE_FILE_EXTENSIONS = [".audionote.md", ".soundstamp.md"];
 

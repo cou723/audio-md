@@ -19,7 +19,7 @@ function drawWaveform(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
     const s1 = Math.floor((y + 1) * samplesPerPx);
     let peak = 0;
     for (let i = s0; i < s1; i++) {
-      const v = Math.abs(channelData[i]);
+      const v = Math.abs(channelData[i] ?? 0);
       if (v > peak) peak = v;
     }
     const hw = peak * 76;
