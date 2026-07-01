@@ -1,26 +1,26 @@
 import { Schema } from "effect";
 
-export const AudioNoteBlockSchema = Schema.Struct({
+export const SoundStampBlockSchema = Schema.Struct({
   t: Schema.Number,
   end: Schema.NullOr(Schema.Number),
   text: Schema.String,
 });
 
-export const AudioNoteDocumentSchema = Schema.Struct({
+export const SoundStampDocumentSchema = Schema.Struct({
   audioPath: Schema.String,
-  blocks: Schema.Array(AudioNoteBlockSchema),
+  blocks: Schema.Array(SoundStampBlockSchema),
 });
 
-export type AudioNoteBlock = Schema.Schema.Type<typeof AudioNoteBlockSchema>;
-export type AudioNoteDocument = Schema.Schema.Type<typeof AudioNoteDocumentSchema>;
+export type SoundStampBlock = Schema.Schema.Type<typeof SoundStampBlockSchema>;
+export type SoundStampDocument = Schema.Schema.Type<typeof SoundStampDocumentSchema>;
 
 const TIMESTAMP_RE = /^\[([^\]]*)\]\(#t=(\d+)(?:,(\d+))?\)/;
 
-export function parseAudioNote(content: string): AudioNoteDocument {
+export function parseSoundStamp(content: string): SoundStampDocument {
   const lines = content.split("\n");
 
   let audioPath = "";
-  const blocks: AudioNoteBlock[] = [];
+  const blocks: SoundStampBlock[] = [];
   let current: { t: number; end: number | null; lines: string[] } | null = null;
 
   for (let i = 0; i < lines.length; i++) {

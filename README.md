@@ -1,6 +1,6 @@
-# Audio Note Viewer
+# SoundStamp
 
-`.audionote.md` ファイルの音声同期プレビューを提供する VSCode 拡張機能。
+`.audionote.md` / `.soundstamp.md` ファイルの音声同期プレビューを提供する VSCode 拡張機能。
 
 ## 機能
 
@@ -12,7 +12,7 @@
 
 ## ファイル形式
 
-拡張子: `*.audionote.md`
+拡張子: `*.audionote.md` または `*.soundstamp.md`（両方サポート）
 
 ```markdown
 @audio ./track.mp3
@@ -28,7 +28,7 @@
 
 ## 使い方
 
-`.audionote.md` ファイルをエディタで開き、タイトルバーの「Open Audio Note Preview」ボタン (`$(open-preview)`) をクリック。
+`.audionote.md` または `.soundstamp.md` ファイルをエディタで開き、タイトルバーの「Open SoundStamp Preview」ボタン (`$(open-preview)`) をクリック。
 
 ## セットアップ
 

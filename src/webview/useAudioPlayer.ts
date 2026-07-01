@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "preact/hooks";
 import type { RefObject } from "preact";
 import { scrollToPlayhead } from "./utils";
-import type { PlatformBridge, AudioNoteDocument, InitMessage } from "./types";
+import type { PlatformBridge, SoundStampDocument, InitMessage } from "./types";
 
 export interface AudioPlayerState {
   playState: "playing" | "paused" | "ended";
@@ -9,7 +9,7 @@ export interface AudioPlayerState {
   duration: number;
   errorMessage: string | null;
   audioBuffer: AudioBuffer | null;
-  doc: AudioNoteDocument | null;
+  doc: SoundStampDocument | null;
   audioRef: RefObject<HTMLAudioElement | null>;
   togglePlay: () => void;
   seek: (time: number) => void;
@@ -24,7 +24,7 @@ export function useAudioPlayer(
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [doc, setDoc] = useState<AudioNoteDocument | null>(null);
+  const [doc, setDoc] = useState<SoundStampDocument | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -44,6 +44,7 @@ export function useAudioPlayer(
         setErrorMessage("音声ファイルが見つかりません: " + newDoc.audioPath);
         return;
       }
+      setErrorMessage(null);
       if (audioUri !== currentAudioUriRef.current) {
         currentAudioUriRef.current = audioUri;
         loadAudio(audioUri, newDoc.audioPath);

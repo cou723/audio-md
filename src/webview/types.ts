@@ -3,19 +3,19 @@ export interface PlatformBridge {
   postMessage: (msg: unknown) => void;
 }
 
-export interface AudioNoteBlock {
+export interface SoundStampBlock {
   t: number;
   end: number | null;
   text: string;
 }
 
-export interface AudioNoteDocument {
+export interface SoundStampDocument {
   audioPath: string;
-  blocks: AudioNoteBlock[];
+  blocks: SoundStampBlock[];
 }
 
 export interface InitMessage {
   type: "init";
-  document: AudioNoteDocument;
+  document: SoundStampDocument;
   audioUri: string;
 }

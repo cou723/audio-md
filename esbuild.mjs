@@ -24,7 +24,7 @@ async function build() {
     outfile: 'dist/webview.js',
     platform: 'browser',
     format: 'iife',
-    globalName: 'AudioNoteApp',
+    globalName: 'SoundStampApp',
     jsx: 'automatic',
     jsxImportSource: 'preact',
   });

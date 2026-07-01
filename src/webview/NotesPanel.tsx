@@ -4,7 +4,7 @@ import type { RefObject } from "preact";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
 import { PX_PER_SEC } from "./utils";
-import type { AudioNoteBlock } from "./types";
+import type { SoundStampBlock } from "./types";
 
 function setMarkdownContent(el: HTMLElement, text: string): void {
   const raw = marked.parse(text.trim(), { async: false }) as string;
@@ -15,7 +15,7 @@ function setMarkdownContent(el: HTMLElement, text: string): void {
 }
 
 interface NoteBlockProps {
-  block: AudioNoteBlock;
+  block: SoundStampBlock;
   onSeek: (time: number) => void;
 }
 
@@ -47,7 +47,7 @@ function NoteBlock({ block, onSeek }: NoteBlockProps) {
 }
 
 interface Props {
-  blocks: AudioNoteBlock[];
+  blocks: SoundStampBlock[];
   duration: number;
   notesPanelRef: RefObject<HTMLDivElement>;
   onSeek: (time: number) => void;
