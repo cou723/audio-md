@@ -2,6 +2,8 @@
 
 `.audionote.md` / `.soundstamp.md` ファイルの音声同期プレビューを提供する VSCode 拡張機能。
 
+![preview](./preview.png)
+
 ## 機能
 
 - 音声ファイルと Markdown ノートの同期表示
