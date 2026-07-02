@@ -1,18 +1,19 @@
 {
-  "name": "audio_md",
+  "name": "audio-md",
   "displayName": "AudioMD",
-  "description": "View .audionote.md and .audio_md.md files with synchronized audio playback",
+  "description": "View .audionote.md and .audiomd.md files with synchronized audio playback",
   "version": "0.1.0",
   "publisher": "coucha",
   "license": "MIT",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cou723/audio_md.git"
+    "url": "https://github.com/cou723/audio-md.git"
   },
   "bugs": {
-    "url": "https://github.com/cou723/audio_md/issues"
+    "url": "https://github.com/cou723/audio-md/issues"
   },
-  "homepage": "https://github.com/cou723/audio_md#readme",
+  "homepage": "https://github.com/cou723/audio-md#readme",
   "keywords": [
     "audio",
     "markdown",
@@ -31,7 +32,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "audio_md.openPreview",
+        "command": "audio-md.openPreview",
         "title": "Open AudioMD Preview",
         "icon": "$(open-preview)"
       }
@@ -39,8 +40,8 @@
     "menus": {
       "editor/title": [
         {
-          "command": "audio_md.openPreview",
-          "when": "resourceFilename =~ /\\.(audionote|audio_md)\\.md$/",
+          "command": "audio-md.openPreview",
+          "when": "resourceFilename =~ /\\.(audionote|audio-md)\\.md$/",
           "group": "navigation"
         }
       ]

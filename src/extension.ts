@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { parseAudioMD, type AudioMDDocument } from "./parser";
 
-const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audio_md.md"];
+const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audiomd.md"];
 
 function isNoteFile(fsPath: string): boolean {
   return NOTE_FILE_EXTENSIONS.some(ext => fsPath.endsWith(ext));
@@ -11,7 +11,7 @@ function isNoteFile(fsPath: string): boolean {
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand("audio_md.openPreview", () => {
+    vscode.commands.registerCommand("audio-md.openPreview", () => {
       const uri = vscode.window.activeTextEditor?.document.uri;
       if (!uri || !isNoteFile(uri.fsPath)) return;
       openPreviewPanel(context, vscode.window.activeTextEditor!.document);
@@ -29,7 +29,7 @@ function openPreviewPanel(
   const logFile = path.join(context.extensionPath, "webview-debug.log");
 
   const panel = vscode.window.createWebviewPanel(
-    "audio_md.viewer",
+    "audio-md.viewer",
     `AudioMD: ${path.basename(document.uri.fsPath)}`,
     vscode.ViewColumn.Beside,
     {
@@ -50,7 +50,7 @@ function openPreviewPanel(
     const audioUri = resolveAudioUri(panel.webview, documentDir, doc);
     if (!audioUri && lastAudioUri) {
       // audioUri が突然空になった場合（フォーマッタや一時的な編集状態）は再生を中断しない
-      console.warn(`[audio_md] sendDocument: audioUri が空になったためスキップ (audioPath="${doc.audioPath}", lastUri="${lastAudioUri}")`);
+      console.warn(`[audio-md] sendDocument: audioUri が空になったためスキップ (audioPath="${doc.audioPath}", lastUri="${lastAudioUri}")`);
       return;
     }
     lastAudioUri = audioUri;

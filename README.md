@@ -1,6 +1,6 @@
 # AudioMD
 
-`.audionote.md` / `.audio_md.md` ファイルの音声同期プレビューを提供する VSCode 拡張機能。
+`.audionote.md` / `.audiomd.md` ファイルの音声同期プレビューを提供する VSCode 拡張機能。
 
 ![preview](./preview.png)
 
@@ -14,7 +14,7 @@
 
 ## ファイル形式
 
-拡張子: `*.audionote.md` または `*.audio_md.md`（両方サポート）
+拡張子: `*.audionote.md` または `*.audiomd.md`（両方サポート）
 
 ```markdown
 @audio ./track.mp3
@@ -30,7 +30,7 @@
 
 ## 使い方
 
-`.audionote.md` または `.audio_md.md` ファイルをエディタで開き、タイトルバーの「Open AudioMD Preview」ボタン (`$(open-preview)`) をクリック。
+`.audionote.md` または `.audiomd.md` ファイルをエディタで開き、タイトルバーの「Open AudioMD Preview」ボタン (`$(open-preview)`) をクリック。
 
 ## セットアップ
 
