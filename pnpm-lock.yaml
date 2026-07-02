@@ -28,10 +28,10 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       '@types/node':
-        specifier: ^20.0.0
+        specifier: ^20.19.39
         version: 20.19.39
       '@types/vscode':
-        specifier: ^1.80.0
+        specifier: ^1.116.0
         version: 1.116.0
       '@vscode/vsce':
         specifier: ^3.9.1

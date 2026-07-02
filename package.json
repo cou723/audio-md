@@ -3,7 +3,7 @@
   "displayName": "AudioMD",
   "description": "View .audionote.md and .audiomd.md files with synchronized audio playback",
   "version": "0.1.0",
-  "publisher": "coucha",
+  "publisher": "dpv-caesar-1",
   "license": "MIT",
   "icon": "icon.png",
   "repository": {
@@ -22,7 +22,7 @@
     "note"
   ],
   "engines": {
-    "vscode": "^1.80.0"
+    "vscode": "^1.116.0"
   },
   "categories": [
     "Visualization",
@@ -55,13 +55,14 @@
     "watch": "node esbuild.mjs --watch",
     "serve": "python3 -m http.server 7890",
     "package": "vsce package --no-dependencies",
+    "publish": "vsce publish --no-dependencies",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/dompurify": "^3.2.0",
     "@types/marked": "^6.0.0",
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.80.0",
+    "@types/node": "^20.19.39",
+    "@types/vscode": "^1.116.0",
     "@vscode/vsce": "^3.9.1",
     "esbuild": "^0.21.0",
     "typescript": "^6.0.3"
@@ -71,10 +72,5 @@
     "effect": "^3.3.0",
     "marked": "^18.0.2",
     "preact": "^10.29.1"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
   }
 }
