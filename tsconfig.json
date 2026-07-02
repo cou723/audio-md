@@ -8,6 +8,7 @@
     "moduleResolution": "bundler",
     "types": ["node"],
     "outDir": "./out",
+    "rootDir": "./src",
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "esModuleInterop": true,

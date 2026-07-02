@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
-import { parseSoundStamp, type SoundStampDocument } from "./parser";
+import { parseAudioMD, type AudioMDDocument } from "./parser";
 
-const NOTE_FILE_EXTENSIONS = [".audionote.md", ".soundstamp.md"];
+const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audio_md.md"];
 
 function isNoteFile(fsPath: string): boolean {
   return NOTE_FILE_EXTENSIONS.some(ext => fsPath.endsWith(ext));
@@ -11,7 +11,7 @@ function isNoteFile(fsPath: string): boolean {
 
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand("soundstamp.openPreview", () => {
+    vscode.commands.registerCommand("audio_md.openPreview", () => {
       const uri = vscode.window.activeTextEditor?.document.uri;
       if (!uri || !isNoteFile(uri.fsPath)) return;
       openPreviewPanel(context, vscode.window.activeTextEditor!.document);
@@ -29,8 +29,8 @@ function openPreviewPanel(
   const logFile = path.join(context.extensionPath, "webview-debug.log");
 
   const panel = vscode.window.createWebviewPanel(
-    "soundstamp.viewer",
-    `SoundStamp: ${path.basename(document.uri.fsPath)}`,
+    "audio_md.viewer",
+    `AudioMD: ${path.basename(document.uri.fsPath)}`,
     vscode.ViewColumn.Beside,
     {
       enableScripts: true,
@@ -46,11 +46,11 @@ function openPreviewPanel(
 
   let lastAudioUri = "";
   const sendDocument = () => {
-    const doc = parseSoundStamp(document.getText());
+    const doc = parseAudioMD(document.getText());
     const audioUri = resolveAudioUri(panel.webview, documentDir, doc);
     if (!audioUri && lastAudioUri) {
       // audioUri が突然空になった場合（フォーマッタや一時的な編集状態）は再生を中断しない
-      console.warn(`[soundstamp] sendDocument: audioUri が空になったためスキップ (audioPath="${doc.audioPath}", lastUri="${lastAudioUri}")`);
+      console.warn(`[audio_md] sendDocument: audioUri が空になったためスキップ (audioPath="${doc.audioPath}", lastUri="${lastAudioUri}")`);
       return;
     }
     lastAudioUri = audioUri;
@@ -115,7 +115,7 @@ function buildHtml(webview: vscode.Webview, context: vscode.ExtensionContext): s
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; media-src ${csp} blob:; connect-src ${csp} blob:; script-src 'nonce-${nonce}'; style-src 'unsafe-inline';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SoundStamp</title>
+  <title>AudioMD</title>
   <style>${APP_CSS}</style>
 </head>
 <body>
@@ -123,7 +123,7 @@ ${APP_HTML}
   <script nonce="${nonce}" src="${scriptUri}"></script>
   <script nonce="${nonce}">(function(){
     const vscode = acquireVsCodeApi();
-    SoundStampApp.init({
+    AudioMDApp.init({
       onMessage: function(h){ window.addEventListener('message', function(e){ h(e.data); }); },
       postMessage: function(m){ vscode.postMessage(m); }
     });
@@ -135,7 +135,7 @@ ${APP_HTML}
 function resolveAudioUri(
   webview: vscode.Webview,
   documentDir: string,
-  doc: SoundStampDocument
+  doc: AudioMDDocument
 ): string {
   if (!doc.audioPath) return "";
   const audioFile = path.resolve(documentDir, doc.audioPath);

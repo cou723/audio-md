@@ -1,18 +1,18 @@
 {
-  "name": "soundstamp",
-  "displayName": "SoundStamp",
-  "description": "View .audionote.md and .soundstamp.md files with synchronized audio playback",
+  "name": "audio_md",
+  "displayName": "AudioMD",
+  "description": "View .audionote.md and .audio_md.md files with synchronized audio playback",
   "version": "0.1.0",
   "publisher": "coucha",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/cou723/soundstamp.git"
+    "url": "https://github.com/cou723/audio_md.git"
   },
   "bugs": {
-    "url": "https://github.com/cou723/soundstamp/issues"
+    "url": "https://github.com/cou723/audio_md/issues"
   },
-  "homepage": "https://github.com/cou723/soundstamp#readme",
+  "homepage": "https://github.com/cou723/audio_md#readme",
   "keywords": [
     "audio",
     "markdown",
@@ -31,16 +31,16 @@
   "contributes": {
     "commands": [
       {
-        "command": "soundstamp.openPreview",
-        "title": "Open SoundStamp Preview",
+        "command": "audio_md.openPreview",
+        "title": "Open AudioMD Preview",
         "icon": "$(open-preview)"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "soundstamp.openPreview",
-          "when": "resourceFilename =~ /\\.(audionote|soundstamp)\\.md$/",
+          "command": "audio_md.openPreview",
+          "when": "resourceFilename =~ /\\.(audionote|audio_md)\\.md$/",
           "group": "navigation"
         }
       ]

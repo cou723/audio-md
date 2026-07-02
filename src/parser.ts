@@ -1,26 +1,26 @@
 import { Schema } from "effect";
 
-export const SoundStampBlockSchema = Schema.Struct({
+export const AudioMDBlockSchema = Schema.Struct({
   t: Schema.Number,
   end: Schema.NullOr(Schema.Number),
   text: Schema.String,
 });
 
-export const SoundStampDocumentSchema = Schema.Struct({
+export const AudioMDDocumentSchema = Schema.Struct({
   audioPath: Schema.String,
-  blocks: Schema.Array(SoundStampBlockSchema),
+  blocks: Schema.Array(AudioMDBlockSchema),
 });
 
-export type SoundStampBlock = Schema.Schema.Type<typeof SoundStampBlockSchema>;
-export type SoundStampDocument = Schema.Schema.Type<typeof SoundStampDocumentSchema>;
+export type AudioMDBlock = Schema.Schema.Type<typeof AudioMDBlockSchema>;
+export type AudioMDDocument = Schema.Schema.Type<typeof AudioMDDocumentSchema>;
 
 const TIMESTAMP_RE = /^\[([^\]]*)\]\(#t=(\d+)(?:,(\d+))?\)/;
 
-export function parseSoundStamp(content: string): SoundStampDocument {
+export function parseAudioMD(content: string): AudioMDDocument {
   const lines = content.split("\n");
 
   let audioPath = "";
-  const blocks: SoundStampBlock[] = [];
+  const blocks: AudioMDBlock[] = [];
   let current: { t: number; end: number | null; lines: string[] } | null = null;
 
   for (const [i, line] of lines.entries()) {

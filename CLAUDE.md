@@ -1,4 +1,4 @@
-# soundstamp — VSCode拡張機能 仕様書
+# audio_md — VSCode拡張機能 仕様書
 
 > ClaudeCode向けの実装指示書。この文書に書かれていない判断は、最もシンプルな実装を選ぶこと。
 
@@ -65,10 +65,10 @@ tail -f webview-debug.log
 ## ディレクトリ構成
 
 ```
-soundstamp/
+audio_md/
 ├── src/
 │   ├── extension.ts          # Extension Host エントリポイント
-│   ├── parser.ts             # .audionote.md / .soundstamp.md パーサー（Effect.ts使用）
+│   ├── parser.ts             # .audionote.md / .audio_md.md パーサー（Effect.ts使用）
 │   └── webview/
 │       ├── index.html        # Webviewのシェル（VSCode用）
 │       ├── standalone.html   # ブラウザ単体動作用（開発・デバッグ用）
@@ -99,7 +99,7 @@ interface PlatformBridge {
 
 ## VSCode拡張登録
 
-`.audionote.md` / `.soundstamp.md` はデフォルトでテキストエディタで開く。
+`.audionote.md` / `.audio_md.md` はデフォルトでテキストエディタで開く。
 ビュワーはコマンド経由でテキストエディタの右隣に開く（Markdown プレビューと同じ動作）。
 
 `package.json` に以下を含めること:
@@ -109,16 +109,16 @@ interface PlatformBridge {
   "contributes": {
     "commands": [
       {
-        "command": "soundstamp.openPreview",
-        "title": "Open SoundStamp Preview",
+        "command": "audio_md.openPreview",
+        "title": "Open AudioMD Preview",
         "icon": "$(open-preview)"
       }
     ],
     "menus": {
       "editor/title": [
         {
-          "command": "soundstamp.openPreview",
-          "when": "resourceFilename =~ /\\.(audionote|soundstamp)\\.md$/",
+          "command": "audio_md.openPreview",
+          "when": "resourceFilename =~ /\\.(audionote|audio_md)\\.md$/",
           "group": "navigation"
         }
       ]
@@ -138,10 +138,10 @@ interface PlatformBridge {
 
 ```
 *.audionote.md
-*.soundstamp.md
+*.audio_md.md
 ```
 
-両方の拡張子をサポートする（後方互換性のため `.audionote.md` を維持しつつ、新規は `.soundstamp.md` を推奨）。
+両方の拡張子をサポートする（後方互換性のため `.audionote.md` を維持しつつ、新規は `.audio_md.md` を推奨）。
 通常のMarkdownのスーパーセット。Markdownレンダラーでそのまま開いても壊れない。
 
 ### 構文
@@ -180,19 +180,19 @@ interface PlatformBridge {
 ```typescript
 import { Schema } from '@effect/schema';
 
-const SoundStampBlock = Schema.Struct({
+const AudioMDBlock = Schema.Struct({
   t:    Schema.Number,
   end:  Schema.NullOr(Schema.Number),
   text: Schema.String,
 });
 
-const SoundStampDocument = Schema.Struct({
+const AudioMDDocument = Schema.Struct({
   audioPath: Schema.String,
-  blocks:    Schema.Array(SoundStampBlock),
+  blocks:    Schema.Array(AudioMDBlock),
 });
 
-type SoundStampBlock    = Schema.Schema.Type<typeof SoundStampBlock>;
-type SoundStampDocument = Schema.Schema.Type<typeof SoundStampDocument>;
+type AudioMDBlock    = Schema.Schema.Type<typeof AudioMDBlock>;
+type AudioMDDocument = Schema.Schema.Type<typeof AudioMDDocument>;
 ```
 
 ---
@@ -365,7 +365,7 @@ VSCode WebviewはローカルファイルへのDirect accessをブロックす�
 
 ```typescript
 const audioUri = panel.webview.asWebviewUri(
-  vscode.Uri.file(path.resolve(documentDir, soundStampDoc.audioPath))
+  vscode.Uri.file(path.resolve(documentDir, audioMdDoc.audioPath))
 );
 // → Webviewに渡して <audio src="..."> に使う
 ```
