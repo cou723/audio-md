@@ -1,10 +1,8 @@
 # 開発環境
 
-## 必須MCPサーバー
+## ドキュメント調査方針
 
-| MCP | 用途 |
-|-----|------|
-| Context7 | VSCode Extension API・Effect.ts の最新ドキュメント取得。実装前に必ず参照すること |
+VS Code Extension API・Effect.ts に関わる実装前には、インターネットで最新の公式ドキュメントを確認すること。技術的な調査では一次情報を優先する。
 
 ## 技術スタック
 
@@ -18,7 +16,7 @@
 
 ## デバッグ方針
 
-Webviewの `console.log` をExtension Host経由でファイルに書き出す。ClaudeCodeはbashで `tail` して読む。
+Webviewの `console.log` をExtension Host経由でファイルに書き出す。Codexはシェルで `tail` して読む。
 
 **Webview側（必ず実装すること）**
 ```typescript
@@ -49,7 +47,7 @@ panel.webview.onDidReceiveMessage(msg => {
 });
 ```
 
-**ClaudeCodeの確認コマンド**
+**Codexの確認コマンド**
 ```bash
 tail -f webview-debug.log
 ```

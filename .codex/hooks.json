@@ -1,0 +1,16 @@
+{
+  "description": "Project-local command policy for audio-md.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); if echo \"$cmd\" | grep -qE 'python3 -m (http\\.server|SimpleHTTPServer|BaseHTTPServer)'; then printf '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"python3のwebサーバーを直接起動しないでください。代わりに `pnpm run serve` を使ってください\"}}'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -12,7 +12,9 @@ audio-md/
 │       ├── standalone.html   # ブラウザ単体動作用（開発・デバッグ用）
 │       ├── main.ts           # Webview側JS（VSCode依存を含めない）
 │       └── style.css
-├── CLAUDE.md
+├── AGENTS.md
+├── .codex/
+│   └── hooks.json            # Codex用のコマンド実行ポリシー
 ├── docs/
 ├── esbuild.mjs               # Extension Host用とWebview用でターゲットを分ける
 ├── package.json
