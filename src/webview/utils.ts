@@ -9,6 +9,11 @@ export function formatTime(sec: number): string {
     : `${m}:${String(s).padStart(2, "0")}`;
 }
 
+export function formatTimestamp(time: number): string {
+  const sec = Math.floor(time);
+  return `[${formatTime(sec)}](#t=${sec}) `;
+}
+
 export function syncScroll(source: Element, target: Element): void {
   const ratio = source.scrollTop / (source.scrollHeight - source.clientHeight);
   target.scrollTop = ratio * (target.scrollHeight - target.clientHeight);

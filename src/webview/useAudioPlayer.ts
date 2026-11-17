@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "preact/hooks";
 import type { RefObject } from "preact";
 import { scrollToPlayhead } from "./utils";
+import { executePlayerCommand, isPlayerCommandMessage } from "./playerCommands";
 import type { PlatformBridge, AudioMDDocument, InitMessage } from "./types";
 
 export interface AudioPlayerState {
@@ -36,6 +37,14 @@ export function useAudioPlayer(
 
   useEffect(() => {
     bridge.onMessage((raw: unknown) => {
+      if (isPlayerCommandMessage(raw)) {
+        executePlayerCommand(raw.command, audioRef.current, {
+          seek,
+          togglePlay,
+          insertTimestamp: text => bridge.postMessage({ type: "insertTimestamp", text }),
+        });
+        return;
+      }
       const msg = raw as InitMessage & { type: string };
       if (msg.type !== "init") return;
       const { document: newDoc, audioUri } = msg;
@@ -57,16 +66,22 @@ export function useAudioPlayer(
   const togglePlay = useCallback((): void => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (audio.paused) { audio.play(); } else { audio.pause(); }
+    if (audio.paused) {
+      void audio.play().catch(err => {
+        console.error("Audio playback failed:", String(err));
+        setErrorMessage("音声を再生できませんでした");
+      });
+    } else { audio.pause(); }
   }, []);
 
   const seek = useCallback((time: number): void => {
     const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = time;
-    setCurrentTime(time);
+    if (!audio || !Number.isFinite(time) || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const target = Math.max(0, Math.min(audio.duration, time));
+    audio.currentTime = target;
+    setCurrentTime(target);
     const panel = wavePanelRef.current;
-    if (panel) scrollToPlayhead(panel, time);
+    if (panel) scrollToPlayhead(panel, target);
   }, []);
 
   const setVolume = useCallback((vol: number): void => {
@@ -75,6 +90,7 @@ export function useAudioPlayer(
 
   function loadAudio(uri: string, audioPath: string): void {
     const prevAudio = audioRef.current;
+    audioRef.current = null;
     if (prevAudio) { prevAudio.pause(); prevAudio.src = ""; }
     if (animFrameRef.current !== null) {
       cancelAnimationFrame(animFrameRef.current);

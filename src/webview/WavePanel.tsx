@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "preact/hooks";
 import type { RefObject } from "preact";
 import { useBridge } from "./BridgeContext";
-import { PX_PER_SEC, formatTime } from "./utils";
+import { PX_PER_SEC, formatTime, formatTimestamp } from "./utils";
 
 function drawWaveform(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
   const h = canvas.height;
@@ -94,8 +94,7 @@ export function WavePanel({ duration, audioBuffer, currentTime, wavePanelRef, on
         const b = Math.floor(Math.max(startTime, endTime));
         text = `[${formatTime(a)}-${formatTime(b)}](#t=${a},${b}) `;
       } else {
-        const sec = Math.floor(startTime);
-        text = `[${formatTime(sec)}](#t=${sec}) `;
+        text = formatTimestamp(startTime);
       }
       bridge.postMessage({ type: "insertTimestamp", text });
     }
