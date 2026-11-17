@@ -14,5 +14,6 @@ pnpm-lock.yaml
 pnpm-workspace.yaml
 preview.png
 src/
+tests/
 tsconfig.json
 webview-debug.log

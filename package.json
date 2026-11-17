@@ -2,7 +2,7 @@
   "name": "audio-md",
   "displayName": "AudioMD",
   "description": "View .audionote.md and .audiomd.md files with synchronized audio playback",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "dpv-caesar-1",
   "license": "MIT",
   "icon": "icon.png",
@@ -58,6 +58,7 @@
   ],
   "scripts": {
     "build": "node esbuild.mjs",
+    "vscode:prepublish": "pnpm run build",
     "watch": "node esbuild.mjs --watch",
     "serve": "python3 -m http.server 7890",
     "package": "vsce package --no-dependencies",
