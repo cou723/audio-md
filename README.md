@@ -34,6 +34,16 @@ audio: ./track.mp3
 
 `.audionote.md` または `.audiomd.md` ファイルをエディタで開き、タイトルバーの「Open AudioMD Preview」ボタン (`$(open-preview)`) をクリック。
 
+### 旧形式からの移行
+
+0.2.0 から、音声参照は先頭行の `@audio ./track.mp3` ではなく YAML Front Matter の `audio` で指定します。
+
+1. 移行したい `.audionote.md` または `.audiomd.md` をテキストエディタで開きます。
+2. コマンドパレットから **AudioMD: Migrate Legacy Audio Reference** を実行します。
+3. 先頭行が Front Matter に置き換わったことを確認し、保存します。
+
+変換対象は開いているファイルの先頭行だけです。本文は変更せず、自動保存もしません。Undo で元に戻せます。旧記法がないファイルや移行済みのファイルは変更しません。
+
 ## セットアップ
 
 ```sh

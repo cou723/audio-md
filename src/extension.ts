@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { parseAudioMD, type AudioMDDocument } from "./parser";
+import { migrateLegacyAudioLine } from "./migration";
 
 const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audiomd.md"];
 
@@ -15,11 +16,37 @@ export function activate(context: vscode.ExtensionContext): void {
       const uri = vscode.window.activeTextEditor?.document.uri;
       if (!uri || !isNoteFile(uri.fsPath)) return;
       openPreviewPanel(context, vscode.window.activeTextEditor!.document);
-    })
+    }),
+    vscode.commands.registerCommand("audio-md.migrateAudioReference", migrateAudioReference)
   );
 }
 
 export function deactivate(): void {}
+
+async function migrateAudioReference(): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor || !isNoteFile(editor.document.uri.fsPath)) {
+    void vscode.window.showInformationMessage("Open an .audionote.md or .audiomd.md file to migrate its audio reference.");
+    return;
+  }
+
+  const firstLine = editor.document.lineAt(0);
+  const frontMatter = migrateLegacyAudioLine(firstLine.text);
+  if (frontMatter === null) {
+    void vscode.window.showInformationMessage("No legacy @audio reference found on the first line. The file was not changed.");
+    return;
+  }
+
+  const applied = await editor.edit(edit => {
+    edit.replace(firstLine.range, frontMatter);
+  }, { undoStopBefore: true, undoStopAfter: true });
+
+  if (applied) {
+    void vscode.window.showInformationMessage("Audio reference migrated to YAML Front Matter. Save the file to keep the change, or Undo to revert it.");
+  } else {
+    void vscode.window.showErrorMessage("Could not migrate the audio reference. The file was not changed.");
+  }
+}
 
 function openPreviewPanel(
   context: vscode.ExtensionContext,

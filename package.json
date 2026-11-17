@@ -35,6 +35,12 @@
         "command": "audio-md.openPreview",
         "title": "Open AudioMD Preview",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "audio-md.migrateAudioReference",
+        "title": "Migrate Legacy Audio Reference",
+        "category": "AudioMD",
+        "enablement": "resourceFilename =~ /\\.(audionote|audiomd)\\.md$/ && !editorReadonly"
       }
     ],
     "menus": {
