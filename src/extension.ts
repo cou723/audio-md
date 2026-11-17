@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { parseAudioMD, type AudioMDDocument } from "./parser";
 import { migrateLegacyAudioLine } from "./migration";
+import type { PlayerCommand, PlayerCommandMessage } from "./webview/playerCommands";
 
 const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audiomd.md"];
 
@@ -11,13 +12,34 @@ function isNoteFile(fsPath: string): boolean {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
+  const panels = new Map<string, vscode.WebviewPanel>();
+  const sendPlayerCommand = async (command: PlayerCommand): Promise<void> => {
+    // Webview フォーカス時は、直前のテキストエディタではなくそのパネルを優先する。
+    const activePanel = [...panels.values()].find(panel => panel.active);
+    const editor = vscode.window.activeTextEditor;
+    const panel = activePanel ?? (editor && isNoteFile(editor.document.uri.fsPath)
+      ? panels.get(editor.document.uri.toString()) : undefined);
+    if (!panel) {
+      void vscode.window.showInformationMessage("Open the AudioMD preview for this note first.");
+      return;
+    }
+    const message: PlayerCommandMessage = { type: "playerCommand", command };
+    if (!await panel.webview.postMessage(message)) {
+      void vscode.window.showInformationMessage("The AudioMD preview is not ready. Open it and try again.");
+    }
+  };
+
   context.subscriptions.push(
     vscode.commands.registerCommand("audio-md.openPreview", () => {
       const uri = vscode.window.activeTextEditor?.document.uri;
       if (!uri || !isNoteFile(uri.fsPath)) return;
-      openPreviewPanel(context, vscode.window.activeTextEditor!.document);
+      openPreviewPanel(context, vscode.window.activeTextEditor!.document, panels);
     }),
-    vscode.commands.registerCommand("audio-md.migrateAudioReference", migrateAudioReference)
+    vscode.commands.registerCommand("audio-md.migrateAudioReference", migrateAudioReference),
+    vscode.commands.registerCommand("audio-md.seekBackward", () => sendPlayerCommand("seekBackward")),
+    vscode.commands.registerCommand("audio-md.seekForward", () => sendPlayerCommand("seekForward")),
+    vscode.commands.registerCommand("audio-md.togglePlayback", () => sendPlayerCommand("togglePlayback")),
+    vscode.commands.registerCommand("audio-md.insertCurrentTimestamp", () => sendPlayerCommand("insertCurrentTimestamp"))
   );
 }
 
@@ -50,8 +72,15 @@ async function migrateAudioReference(): Promise<void> {
 
 function openPreviewPanel(
   context: vscode.ExtensionContext,
-  document: vscode.TextDocument
+  document: vscode.TextDocument,
+  panels: Map<string, vscode.WebviewPanel>
 ): void {
+  const key = document.uri.toString();
+  const existing = panels.get(key);
+  if (existing) {
+    existing.reveal(vscode.ViewColumn.Beside);
+    return;
+  }
   const documentDir = path.dirname(document.uri.fsPath);
   const logFile = path.join(context.extensionPath, "webview-debug.log");
 
@@ -69,6 +98,7 @@ function openPreviewPanel(
     }
   );
 
+  panels.set(key, panel);
   panel.webview.html = buildHtml(panel.webview, context);
 
   let lastAudioUri = "";
@@ -104,7 +134,10 @@ function openPreviewPanel(
     }
   });
 
-  panel.onDidDispose(() => sub.dispose());
+  panel.onDidDispose(() => {
+    panels.delete(key);
+    sub.dispose();
+  });
 }
 
 async function insertTimestamp(document: vscode.TextDocument, text: string): Promise<void> {
