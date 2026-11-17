@@ -1,4 +1,6 @@
-@audio ./track.mp3
+---
+audio: ./track.mp3
+---
 
 [0:1](#t=1) コメントA
 ラベルなしコメント

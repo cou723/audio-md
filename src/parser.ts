@@ -1,4 +1,5 @@
 import { Schema } from "effect";
+import { parse } from "yaml";
 
 export const AudioMDBlockSchema = Schema.Struct({
   t: Schema.Number,
@@ -15,20 +16,35 @@ export type AudioMDBlock = Schema.Schema.Type<typeof AudioMDBlockSchema>;
 export type AudioMDDocument = Schema.Schema.Type<typeof AudioMDDocumentSchema>;
 
 const TIMESTAMP_RE = /^\[([^\]]*)\]\(#t=(\d+)(?:,(\d+))?\)/;
+const FRONT_MATTER_RE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+
+function extractAudioPath(content: string): { audioPath: string; body: string } {
+  const match = content.match(FRONT_MATTER_RE);
+  if (!match) return { audioPath: "", body: content };
+
+  try {
+    const frontMatter: unknown = parse(match[1] ?? "");
+    const audioPath =
+      typeof frontMatter === "object" &&
+      frontMatter !== null &&
+      "audio" in frontMatter &&
+      typeof frontMatter.audio === "string"
+        ? frontMatter.audio
+        : "";
+    return { audioPath, body: content.slice(match[0].length) };
+  } catch {
+    return { audioPath: "", body: content.slice(match[0].length) };
+  }
+}
 
 export function parseAudioMD(content: string): AudioMDDocument {
-  const lines = content.split("\n");
+  const { audioPath, body } = extractAudioPath(content);
+  const lines = body.split("\n");
 
-  let audioPath = "";
   const blocks: AudioMDBlock[] = [];
   let current: { t: number; end: number | null; lines: string[] } | null = null;
 
-  for (const [i, line] of lines.entries()) {
-    if (i === 0 && line.startsWith("@audio ")) {
-      audioPath = line.slice(7).trim();
-      continue;
-    }
-
+  for (const line of lines) {
     const match = line.match(TIMESTAMP_RE);
     if (match) {
       if (current) {

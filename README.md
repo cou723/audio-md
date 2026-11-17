@@ -17,7 +17,9 @@
 拡張子: `*.audionote.md` または `*.audiomd.md`（両方サポート）
 
 ```markdown
-@audio ./track.mp3
+---
+audio: ./track.mp3
+---
 
 [0:10](#t=10) コメントA
 
