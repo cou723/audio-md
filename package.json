@@ -2,7 +2,7 @@
   "name": "audio-md",
   "displayName": "AudioMD",
   "description": "View .audionote.md and .audiomd.md files with synchronized audio playback",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "dpv-caesar-1",
   "license": "MIT",
   "icon": "icon.png",
