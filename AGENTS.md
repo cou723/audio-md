@@ -15,4 +15,4 @@
 | [docs/architecture.md](./docs/architecture.md) | ディレクトリ構成・再利用性の原則・VS Code拡張登録・音声ファイル参照・エラー処理 |
 | [docs/file-format.md](./docs/file-format.md) | `.audiomd.md` の拡張子・構文・パース規則・内部表現の型 |
 | [docs/features.md](./docs/features.md) | 実装する/しない機能一覧 |
-| [docs/webview-ui.md](./docs/webview-ui.md) | UIレイアウト・波形レンダリング・クリック操作・スクロール同期の実装仕様 |
+| [docs/webview-ui.md](./docs/webview-ui.md) | UIレイアウト・スペクトログラムのレンダリング・クリック操作・スクロール同期の実装仕様 |

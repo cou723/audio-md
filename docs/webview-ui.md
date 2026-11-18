@@ -1,6 +1,6 @@
 # Webview UI仕様
 
-## 波形レンダリング仕様
+## スペクトログラム・レンダリング仕様
 
 ### Canvas高さ
 
@@ -10,21 +10,21 @@
 
 想定最大10分 × 80px/sec = 48,000px。仮想スクロール不要、Canvas高さをそのまま使う。
 
-### 波形データ取得
+### スペクトログラム描画
 
-```typescript
-// 1. AudioContext.decodeAudioData で Float32Array を取得
-// 2. モノラルにダウンミックス（チャンネルが複数ある場合は平均）
-// 3. ピークデータを間引く（描画高さ1pxあたり1ピーク値）
-const channelData: Float32Array = buffer.getChannelData(0); // ch0のみ使用
-```
+計算ロジックは DOM 非依存の `src/webview/spectrogram.ts` に置く。定数（FFT サイズ・周波数範囲・dB 範囲）と配色もそこが正本。
+
+1. `AudioContext.decodeAudioData` で取得したチャンネルを、モノラルなら1列、2ch以上なら先頭の L・R を横に並べた2列（各 `SPECTRUM_WIDTH` = 160px）で描画する。3ch以上でも L・R のみ表示する。ステレオ時は境界線と L/R ラベルを描き、左カラム全体の幅は 320px になる
+2. 各チャンネルについて、Canvas の1行（1px）ごとに、その行の中心時刻を中心とした窓（Hann）で FFT する
+3. 各列のX軸は周波数の対数軸（50Hz〜12kHz。サンプリングレートが低ければナイキスト周波数まで）。列ごとに隣接ビンを線形補間する
+4. 強さは dBFS で求め、固定の dB 範囲を 0〜1 に正規化して配色（暗い背景から明るい色）に変換し、`ImageData` で一括描画する
 
 ### グリッド
 
 - `PX_PER_SEC = 80`
 - 5秒ごとに薄いグリッド線と時刻ラベル
 
-## 波形クリック・ドラッグの時間計算
+## スペクトログラム クリック・ドラッグの時間計算
 
 ```typescript
 // クリック位置 → 時間（スクロール込み）
@@ -41,7 +41,7 @@ const isDrag = Math.abs(mouseupY - mousedownY) >= 5;
 waveCanvas.addEventListener("contextmenu", e => e.preventDefault());
 ```
 
-## 波形クリック時の挿入構文
+## クリック時の挿入構文
 
 エディタへの挿入は最初のカーソル位置のみ使用。選択範囲がある場合は置換。
 
