@@ -1,4 +1,11 @@
 export const PX_PER_SEC = 80;
+// スペクトログラム1チャンネル分の幅。ステレオでは L・R を横に並べる。
+export const SPECTRUM_WIDTH = 160;
+
+/** 表示するチャンネル数。3ch 以上でも先頭の L・R だけを表示する。 */
+export function displayChannelCount(numberOfChannels: number): 1 | 2 {
+  return numberOfChannels >= 2 ? 2 : 1;
+}
 
 export function formatTime(sec: number): string {
   const h = Math.floor(sec / 3600);

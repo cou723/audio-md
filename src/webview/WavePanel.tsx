@@ -1,32 +1,35 @@
 import { useRef, useEffect } from "preact/hooks";
 import type { RefObject } from "preact";
 import { useBridge } from "./BridgeContext";
-import { PX_PER_SEC, formatTime, formatTimestamp } from "./utils";
+import { computeSpectrogram, levelToRgb } from "./spectrogram";
+import { PX_PER_SEC, SPECTRUM_WIDTH, displayChannelCount, formatTime, formatTimestamp } from "./utils";
 
-function drawWaveform(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
+const CHANNEL_LABELS = ["L", "R"] as const;
+
+function drawSpectrogram(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
   const h = canvas.height;
+  const channelCount = displayChannelCount(buffer.numberOfChannels);
+  const totalWidth = SPECTRUM_WIDTH * channelCount;
   const ctx = canvas.getContext("2d")!;
   ctx.fillStyle = "#1e1e1e";
-  ctx.fillRect(0, 0, 160, h);
+  ctx.fillRect(0, 0, totalWidth, h);
 
-  const channelData = buffer.getChannelData(0);
-  const samplesPerPx = channelData.length / h;
-  ctx.strokeStyle = "#4ec9b0";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let y = 0; y < h; y++) {
-    const s0 = Math.floor(y * samplesPerPx);
-    const s1 = Math.floor((y + 1) * samplesPerPx);
-    let peak = 0;
-    for (let i = s0; i < s1; i++) {
-      const v = Math.abs(channelData[i] ?? 0);
-      if (v > peak) peak = v;
+  // チャンネルごとに計算し、1枚の画像の左右に並べる（ch0 が左、ch1 が右）。
+  const image = ctx.createImageData(totalWidth, h);
+  for (let ch = 0; ch < channelCount; ch++) {
+    const levels = computeSpectrogram(buffer.getChannelData(ch), buffer.sampleRate, h, SPECTRUM_WIDTH);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < SPECTRUM_WIDTH; x++) {
+        const [r, g, b] = levelToRgb(levels[y * SPECTRUM_WIDTH + x]!);
+        const o = (y * totalWidth + ch * SPECTRUM_WIDTH + x) * 4;
+        image.data[o] = r;
+        image.data[o + 1] = g;
+        image.data[o + 2] = b;
+        image.data[o + 3] = 255;
+      }
     }
-    const hw = peak * 76;
-    ctx.moveTo(80 - hw, y + 0.5);
-    ctx.lineTo(80 + hw, y + 0.5);
   }
-  ctx.stroke();
+  ctx.putImageData(image, 0, 0);
 
   const duration = buffer.duration;
   ctx.strokeStyle = "rgba(255,255,255,0.1)";
@@ -36,9 +39,23 @@ function drawWaveform(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
     const y = sec * PX_PER_SEC;
     ctx.beginPath();
     ctx.moveTo(0, y);
-    ctx.lineTo(160, y);
+    ctx.lineTo(totalWidth, y);
     ctx.stroke();
-    ctx.fillText(formatTime(sec), 2, y + 10);
+    for (let ch = 0; ch < channelCount; ch++) {
+      ctx.fillText(formatTime(sec), ch * SPECTRUM_WIDTH + 2, y + 10);
+    }
+  }
+
+  if (channelCount === 2) {
+    // どちらが L/R か分かるよう、境界線とラベルを描く。
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.beginPath();
+    ctx.moveTo(SPECTRUM_WIDTH + 0.5, 0);
+    ctx.lineTo(SPECTRUM_WIDTH + 0.5, h);
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 12px monospace";
+    CHANNEL_LABELS.forEach((label, ch) => ctx.fillText(label, (ch + 1) * SPECTRUM_WIDTH - 14, 24));
   }
 }
 
@@ -54,6 +71,7 @@ export function WavePanel({ duration, audioBuffer, currentTime, wavePanelRef, on
   const bridge = useBridge();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const waveInnerRef = useRef<HTMLDivElement>(null);
+  const width = SPECTRUM_WIDTH * displayChannelCount(audioBuffer?.numberOfChannels ?? 1);
   const dragRef = useRef<{ startY: number; button: number } | null>(null);
 
   useEffect(() => {
@@ -62,12 +80,11 @@ export function WavePanel({ duration, audioBuffer, currentTime, wavePanelRef, on
     if (!canvas || !inner) return;
     const h = Math.ceil(duration * PX_PER_SEC);
     canvas.height = h;
-    canvas.width = 160;
     inner.style.height = `${h}px`;
   }, [duration]);
 
   useEffect(() => {
-    if (audioBuffer && canvasRef.current) drawWaveform(canvasRef.current, audioBuffer);
+    if (audioBuffer && canvasRef.current) drawSpectrogram(canvasRef.current, audioBuffer);
   }, [audioBuffer]);
 
   const handleMouseDown = (e: MouseEvent) => {
@@ -103,12 +120,12 @@ export function WavePanel({ duration, audioBuffer, currentTime, wavePanelRef, on
   };
 
   return (
-    <div id="wave-panel" ref={wavePanelRef}>
-      <div id="wave-inner" ref={waveInnerRef}>
+    <div id="wave-panel" ref={wavePanelRef} style={{ width: `${width}px` }}>
+      <div id="wave-inner" ref={waveInnerRef} style={{ width: `${width}px` }}>
         <canvas
           id="wave-canvas"
           ref={canvasRef}
-          width={160}
+          width={width}
           height={0}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}

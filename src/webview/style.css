@@ -57,12 +57,11 @@ body {
 #main-area { display: flex; flex: 1; overflow: hidden; }
 
 #wave-panel {
-  width: 160px;
   flex-shrink: 0;
   overflow-y: scroll;
   overflow-x: hidden;
 }
-#wave-inner { position: relative; width: 160px; }
+#wave-inner { position: relative; }
 #wave-canvas { display: block; cursor: crosshair; }
 
 #playhead {
