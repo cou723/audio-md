@@ -19,3 +19,8 @@ export interface InitMessage {
   document: AudioMDDocument;
   audioUri: string;
 }
+
+export interface SettingsMessage {
+  type: "settings";
+  volume: number;
+}

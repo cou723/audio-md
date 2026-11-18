@@ -6,10 +6,12 @@ interface Props {
   duration: number;
   fileName: string;
   onPlay: () => void;
+  volume: number;
   onVolumeChange: (vol: number) => void;
+  onVolumeCommit: (vol: number) => void;
 }
 
-export function Toolbar({ playState, currentTime, duration, fileName, onPlay, onVolumeChange }: Props) {
+export function Toolbar({ playState, currentTime, duration, fileName, volume, onPlay, onVolumeChange, onVolumeCommit }: Props) {
   return (
     <div id="toolbar">
       <button id="play-btn" onClick={onPlay}>
@@ -26,8 +28,9 @@ export function Toolbar({ playState, currentTime, duration, fileName, onPlay, on
           min="0"
           max="1"
           step="0.01"
-          defaultValue="1"
+          value={volume}
           onInput={(e) => onVolumeChange(parseFloat((e.target as HTMLInputElement).value))}
+          onChange={(e) => onVolumeCommit(parseFloat((e.target as HTMLInputElement).value))}
         />
       </span>
       <span id="file-label">{fileName}</span>

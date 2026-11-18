@@ -16,7 +16,13 @@ const mocks = vi.hoisted(() => ({
       onDidReceiveMessage: ReturnType<typeof vi.fn>;
     };
   }[],
-  workspace: { onDidChangeTextDocument: vi.fn(), applyEdit: vi.fn() },
+  config: { get: vi.fn(), update: vi.fn() },
+  workspace: {
+    onDidChangeTextDocument: vi.fn(),
+    onDidChangeConfiguration: vi.fn(),
+    applyEdit: vi.fn(),
+    getConfiguration: vi.fn(),
+  },
   window: {
     activeTextEditor: undefined as ReturnType<typeof editor> | undefined,
     visibleTextEditors: [] as ReturnType<typeof editor>[],
@@ -35,6 +41,7 @@ vi.mock("vscode", () => ({
   window: mocks.window,
   workspace: mocks.workspace,
   ViewColumn: { Beside: -2 },
+  ConfigurationTarget: { Global: 1 },
   Uri: { file: (fsPath: string) => ({ fsPath }), joinPath: () => ({}) },
   WorkspaceEdit: class {
     insert = vi.fn();
@@ -74,6 +81,10 @@ beforeEach(() => {
   mocks.window.visibleTextEditors = [];
   mocks.workspace.onDidChangeTextDocument.mockReturnValue({ dispose: vi.fn() });
   mocks.workspace.applyEdit.mockResolvedValue(true);
+  mocks.workspace.onDidChangeConfiguration.mockReturnValue({ dispose: vi.fn() });
+  mocks.workspace.getConfiguration.mockReturnValue(mocks.config);
+  mocks.config.get.mockReturnValue(1);
+  mocks.config.update.mockResolvedValue(undefined);
   mocks.window.createWebviewPanel.mockImplementation(() => {
     const panel = {
       active: true,
@@ -184,6 +195,62 @@ describe("playback command routing", () => {
     const edit = mocks.workspace.applyEdit.mock.calls[0]![0];
     expect(edit.replace).toHaveBeenCalledWith(mocks.window.activeTextEditor.document.uri,
       mocks.window.activeTextEditor.selection, "[0:12](#t=12) ");
+  });
+});
+
+describe("volume setting", () => {
+  const receive = (panel: Awaited<ReturnType<typeof preview>>, msg: unknown) =>
+    panel.webview.onDidReceiveMessage.mock.calls[0]![0](msg);
+
+  it("declares a 0-1 number setting", () => {
+    expect(manifest.contributes.configuration.properties["audio-md.volume"]).toMatchObject({ type: "number", default: 1, minimum: 0, maximum: 1 });
+  });
+
+  it("sends the saved volume when the webview is ready", async () => {
+    mocks.config.get.mockReturnValue(0.4);
+    const panel = await preview();
+    receive(panel, { type: "ready" });
+    expect(mocks.config.get).toHaveBeenCalledWith("audio-md.volume");
+    expect(panel.webview.postMessage).toHaveBeenCalledWith({ type: "settings", volume: 0.4 });
+  });
+
+  it.each([[2, 1], [-1, 0], ["x", 1]])("normalizes an invalid stored volume %s to %s", async (stored, expected) => {
+    mocks.config.get.mockReturnValue(stored);
+    const panel = await preview();
+    receive(panel, { type: "ready" });
+    expect(panel.webview.postMessage).toHaveBeenCalledWith({ type: "settings", volume: expected });
+  });
+
+  it("saves the volume to the user settings (VS Code routes applyToAllProfiles keys to the default profile)", async () => {
+    const panel = await preview();
+    receive(panel, { type: "setVolume", volume: 0.25 });
+    expect(mocks.config.update).toHaveBeenCalledExactlyOnceWith("audio-md.volume", 0.25, 1);
+  });
+
+  it.each([-0.1, 1.1, Number.NaN, "0.5"])("ignores an invalid volume %s", async volume => {
+    const panel = await preview();
+    receive(panel, { type: "setVolume", volume });
+    expect(mocks.config.update).not.toHaveBeenCalled();
+  });
+
+  it("reports a save failure", async () => {
+    mocks.config.update.mockRejectedValue(new Error("read-only"));
+    const panel = await preview();
+    receive(panel, { type: "setVolume", volume: 0.5 });
+    await vi.waitFor(() => expect(mocks.window.showErrorMessage).toHaveBeenCalledOnce());
+  });
+
+  it("pushes setting changes to the preview and unsubscribes on dispose", async () => {
+    const panel = await preview();
+    const listener = mocks.workspace.onDidChangeConfiguration.mock.calls[0]![0];
+    mocks.config.get.mockReturnValue(0.7);
+    listener({ affectsConfiguration: (key: string) => key === "audio-md.volume" });
+    expect(panel.webview.postMessage).toHaveBeenCalledWith({ type: "settings", volume: 0.7 });
+    panel.webview.postMessage.mockClear();
+    listener({ affectsConfiguration: () => false });
+    expect(panel.webview.postMessage).not.toHaveBeenCalled();
+    panel.onDidDispose.mock.calls[0]![0]();
+    expect(mocks.workspace.onDidChangeConfiguration.mock.results[0]!.value.dispose).toHaveBeenCalledOnce();
   });
 });
 

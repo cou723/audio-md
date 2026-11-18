@@ -5,6 +5,25 @@ import { parseAudioMD, type AudioMDDocument } from "./parser";
 import { migrateLegacyAudioLine } from "./migration";
 import type { PlayerCommand, PlayerCommandMessage } from "./webview/playerCommands";
 
+const VOLUME_SETTING = "audio-md.volume";
+
+// settings.json は手編集され得るため、範囲外・非数値は既定値に倒す。
+function readVolume(): number {
+  const value = vscode.workspace.getConfiguration().get<unknown>(VOLUME_SETTING);
+  return typeof value === "number" && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : 1;
+}
+
+// Global 指定にすることで、現在のプロファイルの settings.json に書かれる。
+// workbench.settings.applyToAllProfiles にこのキーがある場合は、VS Code が default プロファイルへ書き込む。
+async function saveVolume(volume: number): Promise<void> {
+  if (!Number.isFinite(volume) || volume < 0 || volume > 1) return;
+  try {
+    await vscode.workspace.getConfiguration().update(VOLUME_SETTING, volume, vscode.ConfigurationTarget.Global);
+  } catch (error) {
+    void vscode.window.showErrorMessage(`Could not save the AudioMD volume: ${String(error)}`);
+  }
+}
+
 const NOTE_FILE_EXTENSIONS = [".audionote.md", ".audiomd.md"];
 
 function isNoteFile(fsPath: string): boolean {
@@ -114,10 +133,18 @@ function openPreviewPanel(
     panel.webview.postMessage({ type: "init", document: doc, audioUri });
   };
 
+  const sendVolume = () => {
+    void panel.webview.postMessage({ type: "settings", volume: readVolume() });
+  };
+
   panel.webview.onDidReceiveMessage(msg => {
     switch ((msg as { type: string }).type) {
       case "ready":
         sendDocument();
+        sendVolume();
+        break;
+      case "setVolume":
+        void saveVolume((msg as { volume: number }).volume);
         break;
       case "log":
         writeLog(logFile, msg as { level: string; args: string[] });
@@ -134,9 +161,15 @@ function openPreviewPanel(
     }
   });
 
+  // 他のプレビューや設定画面での変更も反映する。
+  const configSub = vscode.workspace.onDidChangeConfiguration(e => {
+    if (e.affectsConfiguration(VOLUME_SETTING)) sendVolume();
+  });
+
   panel.onDidDispose(() => {
     panels.delete(key);
     sub.dispose();
+    configSub.dispose();
   });
 }
 

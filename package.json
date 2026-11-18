@@ -85,6 +85,18 @@
         "when": "(editorTextFocus && resourceFilename =~ /\\.(audionote|audiomd)\\.md$/) || (activeWebviewPanelId == 'audio-md.viewer')"
       }
     ],
+    "configuration": {
+      "title": "AudioMD",
+      "properties": {
+        "audio-md.volume": {
+          "type": "number",
+          "default": 1,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Playback volume of the AudioMD preview (0 to 1). Updated when you move the volume slider."
+        }
+      }
+    },
     "menus": {
       "editor/title": [
         {

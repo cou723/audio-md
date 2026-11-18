@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "preact/hooks";
 import type { RefObject } from "preact";
 import { scrollToPlayhead } from "./utils";
 import { executePlayerCommand, isPlayerCommandMessage } from "./playerCommands";
+import { clampVolume, isSettingsMessage } from "./volume";
 import type { PlatformBridge, AudioMDDocument, InitMessage } from "./types";
 
 export interface AudioPlayerState {
@@ -14,7 +15,9 @@ export interface AudioPlayerState {
   audioRef: RefObject<HTMLAudioElement | null>;
   togglePlay: () => void;
   seek: (time: number) => void;
+  volume: number;
   setVolume: (vol: number) => void;
+  commitVolume: (vol: number) => void;
 }
 
 export function useAudioPlayer(
@@ -27,8 +30,11 @@ export function useAudioPlayer(
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [doc, setDoc] = useState<AudioMDDocument | null>(null);
   const [audioBuffer, setAudioBuffer] = useState<AudioBuffer | null>(null);
+  const [volume, setVolumeState] = useState(1);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // 音声ファイルの読み込み前に届いた設定値も、後から作る Audio へ適用するため ref に持つ。
+  const volumeRef = useRef(1);
   const animFrameRef = useRef<number | null>(null);
   const currentBlobUrlRef = useRef<string | null>(null);
   const currentAudioUriRef = useRef<string | null>(null);
@@ -43,6 +49,10 @@ export function useAudioPlayer(
           togglePlay,
           insertTimestamp: text => bridge.postMessage({ type: "insertTimestamp", text }),
         });
+        return;
+      }
+      if (isSettingsMessage(raw)) {
+        setVolume(raw.volume);
         return;
       }
       const msg = raw as InitMessage & { type: string };
@@ -84,9 +94,18 @@ export function useAudioPlayer(
     if (panel) scrollToPlayhead(panel, target);
   }, []);
 
+  // 画面と Audio への反映のみ。設定ファイルへの保存は commitVolume で行う。
   const setVolume = useCallback((vol: number): void => {
-    if (audioRef.current) audioRef.current.volume = vol;
+    const clamped = clampVolume(vol);
+    volumeRef.current = clamped;
+    setVolumeState(clamped);
+    if (audioRef.current) audioRef.current.volume = clamped;
   }, []);
+
+  // スライダーを放した時点で一度だけ保存する。ドラッグ中の連続入力で settings.json を書き換えないため。
+  const commitVolume = useCallback((vol: number): void => {
+    bridge.postMessage({ type: "setVolume", volume: clampVolume(vol) });
+  }, [bridge]);
 
   function loadAudio(uri: string, audioPath: string): void {
     const prevAudio = audioRef.current;
@@ -116,6 +135,7 @@ export function useAudioPlayer(
         const blobUrl = URL.createObjectURL(blob);
         currentBlobUrlRef.current = blobUrl;
         const audioEl = new Audio(blobUrl);
+        audioEl.volume = volumeRef.current;
         audioRef.current = audioEl;
 
         const ac = new AbortController();
@@ -169,5 +189,5 @@ export function useAudioPlayer(
     }, { signal });
   }
 
-  return { playState, currentTime, duration, errorMessage, audioBuffer, doc, audioRef, togglePlay, seek, setVolume };
+  return { playState, currentTime, duration, errorMessage, audioBuffer, doc, audioRef, togglePlay, seek, volume, setVolume, commitVolume };
 }

@@ -27,7 +27,9 @@ export function App() {
         duration={player.duration}
         fileName={fileName}
         onPlay={player.togglePlay}
+        volume={player.volume}
         onVolumeChange={player.setVolume}
+        onVolumeCommit={player.commitVolume}
       />
       <ErrorBanner message={player.errorMessage} />
       <div id="main-area">
