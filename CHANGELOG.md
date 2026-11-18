@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.1 - 2026-11-18
+
+### 追加・変更
+
+- ツールバーの音量スライダーの値を、ユーザーの `settings.json` の `audio-md.volume`（0〜1、既定 1）に保存するようにしました。スライダーを放した時点で保存し、次回以降のプレビューでも同じ音量で始まります。
+- `audio-md.volume` を default プロファイルの `workbench.settings.applyToAllProfiles` に入れている場合は、VS Code の標準動作で default プロファイルの `settings.json` に保存され、全プロファイルで共有されます。
+
+### 注意
+
+- 実際の VS Code 上での保存・復元の動作は、公開時点で目視確認できていません。不具合があれば Issue で教えてください。
+
 ## 0.2.0 - 2026-11-18
 
 ### 破壊的変更
