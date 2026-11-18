@@ -49,6 +49,12 @@ audio: ./track.mp3
 
 コマンドパレットの **AudioMD** コマンドからも実行でき、VS Code の「キーボード ショートカット」でキーを変更できます。
 
+### 音量
+
+ツールバーのスライダーで音量を変えると、放した時点でユーザーの `settings.json` の `audio-md.volume`（0〜1、既定 1）に保存され、次回以降のプレビューにも使われます。
+
+現在のプロファイルの `settings.json` に書き込みます。`audio-md.volume` を default プロファイルの `workbench.settings.applyToAllProfiles` に入れている場合は、VS Code の標準動作で default プロファイルの `settings.json` に書き込まれ、全プロファイルで共有されます。
+
 ### 旧形式からの移行
 
 0.2.0 から、音声参照は先頭行の `@audio ./track.mp3` ではなく YAML Front Matter の `audio` で指定します。

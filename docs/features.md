@@ -13,6 +13,7 @@
 8. 再生中はスペクトログラムを自動スクロールしてプレイヘッドを追う
 9. Webview console.log をlogファイルへ書き出す（デバッグ用）
 10. ノートブロッククリック → そのブロックの開始時間にシーク
+11. ツールバーの音量スライダーを放したとき、`audio-md.volume` をユーザー設定（`ConfigurationTarget.Global`）に保存し、プレビュー起動時と設定変更時に復元・反映する。`workbench.settings.applyToAllProfiles` に含まれるキーの書き込み先は VS Code が default プロファイルに振り分けるため、拡張側で分岐しない
 
 ## 実装しない機能
 
