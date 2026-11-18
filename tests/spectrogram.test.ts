@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { displayChannelCount } from "../src/webview/utils";
+import { displayChannelCount, spectrumX, SPECTRUM_WIDTH } from "../src/webview/utils";
 import { columnFrequency, computeSpectrogram, FREQ_MAX_HZ, levelToRgb } from "../src/webview/spectrogram";
 
 const SAMPLE_RATE = 44100;
@@ -63,5 +63,19 @@ describe("displayChannelCount", () => {
     const right = computeSpectrogram(new Float32Array(SAMPLE_RATE), SAMPLE_RATE, 40, WIDTH);
     expect(Math.max(...left)).toBeGreaterThan(0.5);
     expect(Math.max(...right)).toBe(0);
+  });
+});
+
+describe("spectrumX", () => {
+  it("ステレオでは L の周波数軸を反転し、低域が中央に寄る", () => {
+    expect(spectrumX(0, 0, 2)).toBe(SPECTRUM_WIDTH - 1); // L の最低域は左列の右端（中央側）
+    expect(spectrumX(0, SPECTRUM_WIDTH - 1, 2)).toBe(0); // L の最高域は左端
+    expect(spectrumX(1, 0, 2)).toBe(SPECTRUM_WIDTH); // R の最低域は右列の左端（中央側）
+    expect(spectrumX(1, SPECTRUM_WIDTH - 1, 2)).toBe(SPECTRUM_WIDTH * 2 - 1);
+  });
+
+  it("モノラルは反転しない", () => {
+    expect(spectrumX(0, 0, 1)).toBe(0);
+    expect(spectrumX(0, SPECTRUM_WIDTH - 1, 1)).toBe(SPECTRUM_WIDTH - 1);
   });
 });

@@ -2,6 +2,16 @@ export const PX_PER_SEC = 80;
 // スペクトログラム1チャンネル分の幅。ステレオでは L・R を横に並べる。
 export const SPECTRUM_WIDTH = 160;
 
+/**
+ * チャンネル ch の周波数列 x（0=低域）を、Canvas 上の横位置に変換する。
+ * ステレオでは L（ch0）を左右反転し、低域が中央（L/R の境界）側に寄るようにする。
+ * モノラルは反転しない。
+ */
+export function spectrumX(ch: number, x: number, channelCount: 1 | 2): number {
+  const mirrored = channelCount === 2 && ch === 0;
+  return ch * SPECTRUM_WIDTH + (mirrored ? SPECTRUM_WIDTH - 1 - x : x);
+}
+
 /** 表示するチャンネル数。3ch 以上でも先頭の L・R だけを表示する。 */
 export function displayChannelCount(numberOfChannels: number): 1 | 2 {
   return numberOfChannels >= 2 ? 2 : 1;

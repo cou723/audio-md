@@ -2,7 +2,7 @@ import { useRef, useEffect } from "preact/hooks";
 import type { RefObject } from "preact";
 import { useBridge } from "./BridgeContext";
 import { computeSpectrogram, levelToRgb } from "./spectrogram";
-import { PX_PER_SEC, SPECTRUM_WIDTH, displayChannelCount, formatTime, formatTimestamp } from "./utils";
+import { PX_PER_SEC, SPECTRUM_WIDTH, displayChannelCount, formatTime, spectrumX, formatTimestamp } from "./utils";
 
 const CHANNEL_LABELS = ["L", "R"] as const;
 
@@ -15,13 +15,14 @@ function drawSpectrogram(canvas: HTMLCanvasElement, buffer: AudioBuffer): void {
   ctx.fillRect(0, 0, totalWidth, h);
 
   // チャンネルごとに計算し、1枚の画像の左右に並べる（ch0 が左、ch1 が右）。
+  // 左は周波数軸を反転し、低域が中央に寄る（左: 高→低 | 右: 低→高）。
   const image = ctx.createImageData(totalWidth, h);
   for (let ch = 0; ch < channelCount; ch++) {
     const levels = computeSpectrogram(buffer.getChannelData(ch), buffer.sampleRate, h, SPECTRUM_WIDTH);
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < SPECTRUM_WIDTH; x++) {
         const [r, g, b] = levelToRgb(levels[y * SPECTRUM_WIDTH + x]!);
-        const o = (y * totalWidth + ch * SPECTRUM_WIDTH + x) * 4;
+        const o = (y * totalWidth + spectrumX(ch, x, channelCount)) * 4;
         image.data[o] = r;
         image.data[o + 1] = g;
         image.data[o + 2] = b;
